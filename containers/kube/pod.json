@@ -1,0 +1,39 @@
+{
+  "apiVersion": "apps/v1",
+  "kind": "Deployment",
+  "metadata": {
+    "name": "sip",
+    "labels": {
+      "app": "sip"
+    }
+  },
+  "spec": {
+    "selector": {
+      "matchLabels": {
+        "app": "sip"
+      }
+    },
+    "replicas": 10,
+    "template": {
+      "metadata": {
+        "labels": {
+          "app": "sip"
+        }
+      },
+      "spec": {
+        "containers": [
+          {
+            "name": "sip",
+            "image": "sip",
+            "imagePullPolicy": "Never",
+            "ports": [
+              {
+                "containerPort": 1670
+              }
+            ]
+          }
+        ]
+      }
+    }
+  }
+}

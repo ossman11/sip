@@ -1,0 +1,1 @@
+kubectl delete pods,services,deployments --all --now
