@@ -11,5 +11,8 @@
 # Output of the go coverage tool, specifically when used with LiteIDE
 *.out
 
-# debugging file
+# Debugging file
 debug
+
+# Server certificate
+crt

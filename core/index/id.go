@@ -6,43 +6,57 @@ import (
 	"net"
 )
 
-type ID [sha256.Size]byte
+type ID string
+
+func ParseHWID() ID {
+	b := sha256.Sum256([]byte(HWID()))
+	return ID(hex.EncodeToString(b[:]))
+}
 
 func ParseIP(ip net.IP) ID {
-	return sha256.Sum256([]byte(ip.String()))
+	b := sha256.Sum256([]byte(ip.String()))
+	return ID(hex.EncodeToString(b[:]))
 }
 
 func ParseStr(str string) ID {
-	var ret ID
-	res, _ := hex.DecodeString(str)
-	for i := range res {
-		ret[i] = res[i]
-	}
+	return ID(str)
+}
+
+func ParseByte(b []byte) ID {
+	return ID(hex.EncodeToString(b[:]))
+}
+
+func (i *ID) Hash() []byte {
+	ret, _ := hex.DecodeString(i.String())
 	return ret
 }
 
 func (i *ID) String() string {
-	return hex.EncodeToString(i[:])
+	return string(*i)
 }
 
 func (i *ID) Out(ip net.IP) ID {
-	d := ParseIP(ip)
-	r := ID{}
+	h := i.Hash()
+	ipID := ParseIP(ip)
+	d := ipID.Hash()
+	r := i.Hash()
 
-	for y := range i {
-		r[y] = i[y] + d[y]
+	for y := range h {
+		r[y] = h[y] + d[y]
 	}
 
-	return r
+	return ParseByte(r)
 }
 
 func (i *ID) In(ip net.IP) ID {
-	d := ParseIP(ip)
-	r := ID{}
+	h := i.Hash()
+	ipID := ParseIP(ip)
+	d := ipID.Hash()
+	r := i.Hash()
 
-	for y := range i {
-		r[y] = byte(i[y] - d[y])
+	for y := range h {
+		r[y] = byte(h[y] - d[y])
 	}
 
-	return r
+	return ParseByte(r)
 }

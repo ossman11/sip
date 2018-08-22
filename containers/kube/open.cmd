@@ -1,1 +1,1 @@
-minikube service sip
+minikube service sip --https

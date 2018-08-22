@@ -2,6 +2,7 @@ package api
 
 import (
 	"errors"
+	"fmt"
 	"net/http"
 )
 
@@ -15,6 +16,7 @@ type Handler struct {
 func (rh *Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	a, ok := rh.gets[r.URL.Path]
 	if ok {
+		w.Header().Add("Strict-Transport-Security", "max-age=63072000; includeSubDomains")
 		a(w, r)
 	} else {
 		http.NotFound(w, r)
@@ -71,6 +73,12 @@ func (rh *Handler) Running() {
 
 // AddCore adds the core API implementations to the Handler instance
 func (rh *Handler) AddCore() {
-	rh.Add(NewIndex())
-	rh.Add(NewHome())
+	err := rh.Add(NewIndex())
+	if err != nil {
+		fmt.Println(err)
+	}
+	err = rh.Add(NewHome())
+	if err != nil {
+		fmt.Println(err)
+	}
 }

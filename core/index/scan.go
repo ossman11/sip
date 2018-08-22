@@ -2,20 +2,14 @@ package index
 
 import (
 	"encoding/binary"
-	"encoding/json"
 	"fmt"
 	"log"
 	"net"
-	"net/http"
-	"time"
-
-	"github.com/ossman11/sip/core/def"
 )
 
 type Scan struct {
-	httpClient *http.Client
-	Result     map[string]Connection
-	Running    bool
+	parent  *Index
+	Running bool
 }
 
 func (i *Scan) endGo(c chan bool) {
@@ -39,27 +33,7 @@ func (i *Scan) awaitChan(cc int, ch chan bool) {
 }
 
 func (i *Scan) getIP(ip net.IP, c chan bool) {
-	// Prepare the target string
-	str := ip.String() + ":1670" // 1670
-
-	res, err := i.httpClient.Get("http://" + str + def.APIIndexJoin)
-	if err == nil {
-		var m Type
-		dec := json.NewDecoder(res.Body)
-		err = dec.Decode(&m)
-		if err != nil {
-			fmt.Println(err)
-			return
-		}
-
-		id := ParseIP(ip)
-		i.Result[id.String()] = Connection{
-			IP:   ip,
-			ID:   id,
-			Type: m,
-		}
-	}
-
+	i.parent.Join(ip)
 	i.endGo(c)
 }
 
@@ -70,7 +44,7 @@ func (i *Scan) walkIP(ipnet *net.IPNet, c chan bool) {
 
 	// Convert IP and mask into integers
 	ip := binary.BigEndian.Uint32([]byte(ipnet.IP))
-	srcIP := ip
+	// srcIP := ip
 	mask := binary.BigEndian.Uint32([]byte(ipnet.Mask))
 
 	ip &= mask
@@ -84,23 +58,18 @@ func (i *Scan) walkIP(ipnet *net.IPNet, c chan bool) {
 
 	// Walk over all possible addresses that are on the IP range
 	for mask < 0xffffffff {
-		if ip != srcIP {
-			// Construct new target IP
-			var buf [4]byte
-			binary.BigEndian.PutUint32(buf[:], ip)
-			tar := net.IP(buf[:])
+		// Construct new target IP
+		var buf [4]byte
+		binary.BigEndian.PutUint32(buf[:], ip)
+		tar := net.IP(buf[:])
 
-			// Process the target IP address
-			go i.getIP(tar, ch)
-			cc++
-		}
+		// Process the target IP address
+		go i.getIP(tar, ch)
+		cc++
+
 		// Prepare the next ip address
 		mask++
 		ip++
-
-		if (0xffffffff-mask)%100 == 0 {
-			fmt.Println(0xffffffff - mask)
-		}
 	}
 
 	i.awaitChan(cc, ch)
@@ -176,13 +145,9 @@ func (i *Scan) Scan() {
 	i.Running = false
 }
 
-func NewScan() Scan {
-	timeout := time.Duration(30 * time.Second)
+func NewScan(p *Index) Scan {
 	i := Scan{
-		Result: map[string]Connection{},
-		httpClient: &http.Client{
-			Timeout: timeout,
-		},
+		parent: p,
 	}
 	return i
 }

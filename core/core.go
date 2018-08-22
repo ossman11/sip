@@ -1,6 +1,7 @@
 package core
 
 import (
+	"crypto/tls"
 	"log"
 	"net/http"
 	"sync"
@@ -34,6 +35,19 @@ func (c *Core) Init() {
 		return
 	}
 
+	cfg := &tls.Config{
+		MinVersion:               tls.VersionTLS12,
+		CurvePreferences:         []tls.CurveID{tls.CurveP521, tls.CurveP384, tls.CurveP256},
+		PreferServerCipherSuites: true,
+		CipherSuites: []uint16{
+			// tls.TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384,
+			// tls.TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA,
+			tls.TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256,
+			tls.TLS_RSA_WITH_AES_256_GCM_SHA384,
+			// tls.TLS_RSA_WITH_AES_256_CBC_SHA,
+		},
+	}
+
 	// Create new instance for the handler and server
 	c.handler = &api.Handler{}
 	c.handler.AddCore()
@@ -43,6 +57,7 @@ func (c *Core) Init() {
 		ReadTimeout:    10 * time.Second,
 		WriteTimeout:   10 * time.Second,
 		MaxHeaderBytes: 1 << 20,
+		TLSConfig:      cfg,
 	}
 	c.handler.Running()
 	c.ready = true
@@ -52,7 +67,8 @@ func (c *Core) Init() {
 // Starts the core instance
 func (c *Core) Start() {
 	c.Init()
-	log.Fatal(c.server.ListenAndServe())
+	log.Fatal(c.server.ListenAndServeTLS("crt/server.crt", "crt/server.key"))
+	// log.Fatal(c.server.ListenAndServe())
 }
 
 // AddApis enhances the Core functionalities with additional Api implementations
