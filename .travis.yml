@@ -32,7 +32,7 @@ script:
   # Print all information of the cluster
   - kubectl get all
   # Wait for deployed application to be ready.
-  - JSONPATH='{range .items[*]}{@.metadata.name}:{@.status.availableReplicas};{end}'; until kubectl get deployments sip && kubectl get deployments sip -o jsonpath="$JSONPATH" 2>&1 | grep -q "sip:10"; do sleep 1; done
+  - JSONPATH='{range .items[*]}{@.metadata.name}:{@.status.availableReplicas};{end}'; until kubectl get all && kubectl get deployments sip -o jsonpath="$JSONPATH" 2>&1 | grep -q "sip:10"; do sleep 1; done
   # Fetch the service port
   - SIP_PORT="$(kubectl get deployments sip -o jsonpath='{.spec.ports[0].nodePort}' 2>&1)"
   - echo "${SIP_PORT}"
