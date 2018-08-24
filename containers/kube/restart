@@ -1,0 +1,4 @@
+source ./containers/kube/clean.cmd
+source ./containers/build.cmd
+source ./containers/kube/deploy.cmd
+source ./containers/kube/open.cmd

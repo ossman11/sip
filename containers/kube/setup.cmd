@@ -1,1 +1,1 @@
-minikube start --vm-driver "hyperv" --hyperv-virtual-switch "Minikube" --disk-size 10g --memory 4096 --v 9999 --alsologtostderr
+minikube start --vm-driver "hyperv" --hyperv-virtual-switch "Minikube" --disk-size 40g --cpus 4 --memory 8192 --v 9999

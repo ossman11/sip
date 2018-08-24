@@ -1,0 +1,1 @@
+docker run -p 1670:1670 --rm --name my-sip -e DOMAIN=cluster sip
