@@ -6,10 +6,11 @@ services:
   - docker
 
 env:
-  # Specifies the kubernetes version.
-  - KUBERNETES_VERSION=v1.10.0
-  # This moves Kubernetes specific config files.
-  - CHANGE_MINIKUBE_NONE_USER=true
+  global:
+    # Specifies the kubernetes version.
+    - KUBERNETES_VERSION=v1.10.0
+    # This moves Kubernetes specific config files.
+    - CHANGE_MINIKUBE_NONE_USER=true
 
 before_script:
   # Download kubectl, which is a requirement for using minikube.
