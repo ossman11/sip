@@ -29,11 +29,7 @@ script:
   - ./containers/build
   # Deploy multiple duplicated of this container onto minikube.
   - ./containers/kube/deploy
-  # Wait for deployed application to be ready.
-  - JSONPATH='{.metadata.name}:{.status.availableReplicas}'; until kubectl get deployments sip -o jsonpath="$JSONPATH" 2>&1 | grep -q "sip:10"; do sleep 1; done
-  # Fetch the service port
-  - export SIP_PORT="$(kubectl get deployments sip -o jsonpath='{.spec.ports[0].nodePort}' 2>&1)"
-  - echo "${SIP_PORT}"
-
+  # Run all test interacting with the cluster
+  - ./containers/kube/ci/test
   # Clean everything from the minikube.
   - ./containers/kube/clean
