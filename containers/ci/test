@@ -3,7 +3,11 @@
 # Wait for deployed application to be ready.
 JSONPATH='{.metadata.name}:{.status.availableReplicas}'; until kubectl get deployments sip -o jsonpath="$JSONPATH" 2>&1 | grep -q "sip:10"; do sleep 1; done
 
-echo "$(kubectl get services sip -o jsonpath='{.spec.ports[0].nodePort}' 2>&1)"
 # Fetch the service port
 SIP_PORT="$(kubectl get services sip -o jsonpath='{.spec.ports[0].nodePort}' 2>&1)"
-echo "${SIP_PORT}"
+SIP_HOST="$(kubectl get nodes minikube -o jsonpath="{.status.addresses[0].address}")"
+SIP_URL="https://${SIP_HOST}:${SIP_PORT}/"
+echo "home response: ${SIP_URL}"
+curl -k "${SIP_URL}"
+echo "index response: ${SIP_URL}/index"
+curl -k "${SIP_URL}/index"
