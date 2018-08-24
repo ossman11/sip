@@ -29,6 +29,8 @@ script:
   - ./containers/build
   # Deploy multiple duplicated of this container onto minikube.
   - ./containers/kube/deploy
+  # Print all information of the cluster
+  - kubectl get all
   # Wait for deployed application to be ready.
   - JSONPATH='{range .items[*]}{@.metadata.name}:{range @.status.conditions[*]}{@.type}={@.status};{end}{end}'; until kubectl get deployments sip -o jsonpath="$JSONPATH" 2>&1 | grep -q "Available=True"; do sleep 1; done
   # Fetch the service port
