@@ -10,4 +10,5 @@ SIP_URL="https://${SIP_HOST}:${SIP_PORT}"
 echo "home response: ${SIP_URL}"
 curl -k "${SIP_URL}"
 echo "index response: ${SIP_URL}/index"
-curl -k "${SIP_URL}/index"
+curl -k "${SIP_URL}/index" | \
+  python3 -c "import sys, json; print('Connections: ');print(len(json.load(sys.stdin)['Connections'].keys()))"
