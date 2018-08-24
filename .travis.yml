@@ -30,6 +30,6 @@ script:
   # Deploy multiple duplicated of this container onto minikube.
   - ./containers/kube/deploy
   # Run all test interacting with the cluster
-  - ./containers/kube/ci/test
+  - ./containers/kube/test
   # Clean everything from the minikube.
   - ./containers/kube/clean
