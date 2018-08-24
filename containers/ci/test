@@ -5,7 +5,7 @@ JSONPATH='{.metadata.name}:{.status.availableReplicas}'; until kubectl get deplo
 
 # Fetch the service port
 SIP_PORT="$(kubectl get services sip -o jsonpath='{.spec.ports[0].nodePort}' 2>&1)"
-SIP_HOST="$(kubectl get nodes minikube -o jsonpath="{.status.addresses[0].address}")"
+SIP_HOST="$(kubectl get nodes -o jsonpath='{.items[0].status.addresses[0].address}')"
 SIP_URL="https://${SIP_HOST}:${SIP_PORT}/"
 echo "home response: ${SIP_URL}"
 curl -k "${SIP_URL}"
