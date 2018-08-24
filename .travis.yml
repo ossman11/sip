@@ -27,6 +27,8 @@ before_script:
 script:
   # Build the current state into a docker image.
   - ./containers/build
+  # Print all images from docker
+  - docker images -a
   # Deploy multiple duplicated of this container onto minikube.
   - ./containers/kube/deploy
   # Print all information of the cluster
