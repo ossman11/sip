@@ -25,4 +25,9 @@ before_script:
   - JSONPATH='{range .items[*]}{@.metadata.name}:{range @.status.conditions[*]}{@.type}={@.status};{end}{end}'; until kubectl get nodes -o jsonpath="$JSONPATH" 2>&1 | grep -q "Ready=True"; do sleep 1; done
 
 script:
-  - docker build -t sip .
+  # Build the current state into a docker image.
+  - ./containers/build
+  # Deploy multiple duplicated of this container onto minikube.
+  - ./containers/kube/deploy
+  # Clean everything from the minikube.
+  - ./containers/kube/clean
