@@ -49,18 +49,20 @@ func (i *Index) JoinNode(newNode Node) {
 	}
 	newCon := NewConnection(newConNodes)
 
-	_, nodeExists := i.Nodes[newNode.ID]
-	_, conExists := i.Connections[newCon.ID]
-	if !nodeExists || !conExists {
-		if !conExists {
-			i.AddCon(newCon)
-		}
+	if newNode.IP.String() != node.IP.String() && newNode.ID != node.ID {
+		_, nodeExists := i.Nodes[newNode.ID]
+		_, conExists := i.Connections[newCon.ID]
+		if !nodeExists || !conExists {
+			if !conExists {
+				i.AddCon(newCon)
+			}
 
-		if !nodeExists {
-			i.Add(newNode)
-		}
+			if !nodeExists {
+				i.Add(newNode)
+			}
 
-		i.Join(newNode.IP)
+			i.Join(newNode.IP)
+		}
 	}
 }
 
@@ -72,48 +74,47 @@ func (i *Index) Join(ip net.IP) {
 		fmt.Println(err)
 		return
 	}
-	res, err := i.httpClient.Post(
-		"https://"+str+def.APIIndexJoin,
-		"application/json",
-		bytes.NewBuffer(bod))
 
-	/*
-	if err != nil && ip.String() == "127.0.0.1" {
-		i.Join(ip)
-		return
-	}
-	*/
+	if ip.String() != node.IP.String() {
+		res, err := i.httpClient.Post(
+			"https://"+str+def.APIIndexJoin,
+			"application/json",
+			bytes.NewBuffer(bod))
 
-	if err == nil {
-		fmt.Println("JOIN: ", node.IP.String(), " -> ", ip.String())
-		newNode := Node{}
-		dec := json.NewDecoder(res.Body)
-		err := dec.Decode(&newNode)
+		if err == nil {
+			fmt.Println("JOIN: ", node.IP.String(), " -> ", ip.String())
 
-		if err != nil {
-			fmt.Println(err)
-		}
+			newNode := Node{}
+			dec := json.NewDecoder(res.Body)
+			err = dec.Decode(&newNode)
 
-		newConNodes := []*Node{
-			&node,
-			&newNode,
-		}
-		newCon := NewConnection(newConNodes)
+			if err != nil {
+				fmt.Println(err)
+				return
+			}
 
-		change := false
-		_, ex := i.Nodes[newNode.ID]
-		if !ex {
-			i.Add(newNode)
-			change = true
-		}
-		_, ex = i.Connections[newCon.ID]
-		if !ex {
-			i.AddCon(newCon)
-			change = true
-		}
+			newConNodes := []*Node{
+				&node,
+				&newNode,
+			}
+			newCon := NewConnection(newConNodes)
 
-		if change {
-			go i.Update()
+			change := false
+			_, ex := i.Nodes[newNode.ID]
+			change = ex || change
+			if !ex {
+				i.Add(newNode)
+			}
+
+			_, ex = i.Connections[newCon.ID]
+			change = ex || change
+			if !ex {
+				i.AddCon(newCon)
+			}
+
+			if change {
+				go i.Update()
+			}
 		}
 	}
 }
