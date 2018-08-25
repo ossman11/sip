@@ -14,7 +14,7 @@ env:
 
 before_script:
   # Setup minikube for ci enviroment.
-  - ./containers/ci/minikube
+  - sudo ./containers/ci/minikube
 
 script:
   # Deploy multiple duplicated of this container onto minikube.
