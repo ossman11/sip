@@ -1,2 +1,2 @@
 #!/bin/bash
-docker build -t sip:v1 .
+docker build -t sip:test . || printf "Failed to build docker container -t sip:test"

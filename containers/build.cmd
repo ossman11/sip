@@ -1,1 +1,1 @@
-docker build -t sip:v1 .
+docker build -t sip:test .

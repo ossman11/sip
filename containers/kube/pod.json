@@ -24,7 +24,7 @@
         "containers": [
           {
             "name": "sip",
-            "image": "sip:v1",
+            "image": "sip:test",
             "imagePullPolicy": "Never",
             "ports": [
               {
