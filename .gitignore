@@ -13,3 +13,7 @@
 
 # Debugging file
 debug
+
+# Development certificates and keys
+*.crt
+*.key
