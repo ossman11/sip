@@ -67,6 +67,7 @@ func (h *Index) join(w http.ResponseWriter, r *http.Request) {
 	strIP := r.RemoteAddr
 	ipEnd := strings.LastIndex(strIP, ":")
 	ip := net.ParseIP(strIP[:ipEnd])
+	// fmt.Println("Join from ip: ", ip)
 	ip4 := ip.To4()
 	ip6 := ip.To16()
 

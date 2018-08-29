@@ -82,7 +82,7 @@ func (i *Index) Join(ip net.IP) {
 			bytes.NewBuffer(bod))
 
 		if err == nil {
-			fmt.Println("JOIN: ", node.IP.String(), " -> ", ip.String())
+			// fmt.Println("JOIN: ", node.IP.String(), " -> ", ip.String())
 
 			newNode := Node{}
 			dec := json.NewDecoder(res.Body)
@@ -168,7 +168,7 @@ func (i *Index) Update() {
 			bytes.NewBuffer(bod))
 
 		if err == nil {
-			fmt.Println("INDEX: ", thisNode.IP.String(), " -> ", v.IP.String())
+			// fmt.Println("INDEX: ", thisNode.IP.String(), " -> ", v.IP.String())
 			resBod := Index{}
 			dec := json.NewDecoder(res.Body)
 			err = dec.Decode(&resBod)
