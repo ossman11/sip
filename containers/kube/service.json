@@ -1,0 +1,16 @@
+{
+  "apiVersion": "v1",
+  "kind": "Service",
+  "metadata": {
+    "name": "external"
+  },
+  "spec": {
+    "ports": [
+      {
+        "protocol": "TCP",
+        "port": 1670,
+        "targetPort": 1670
+      }
+    ]
+  }
+}

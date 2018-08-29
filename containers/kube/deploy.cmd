@@ -1,3 +1,5 @@
+kubectl create -f ./containers/kube/service.json
+kubectl create -f ./containers/kube/endpoint.json
 kubectl create -f ./containers/kube/pod.json
-kubectl expose deployment sip --type=NodePort
+kubectl create -f ./containers/kube/podService.json
 kubectl get services sip

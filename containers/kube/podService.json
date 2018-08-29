@@ -1,0 +1,21 @@
+{
+  "kind": "Service",
+  "apiVersion": "v1",
+  "metadata": {
+    "name": "sip"
+  },
+  "spec": {
+    "ports": [
+      {
+        "nodePort": 31670,
+        "port": 1670,
+        "targetPort": 1670
+      }
+    ],
+    "selector": {
+      "app": "sip"
+    },
+    "type": "NodePort",
+    "externalTrafficPolicy": "Local"
+  }
+}
