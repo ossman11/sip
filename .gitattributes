@@ -9,7 +9,9 @@
 *.ini text
 *.inc text
 *.go text
+*.yml text
 .htaccess text
+Dockerfile text
 
 # These files are binary and should be left untouched
 # (binary is a macro for -text -diff)
