@@ -5,6 +5,8 @@ import (
 	"fmt"
 	"log"
 	"net"
+
+	"github.com/ossman11/sip/core/def"
 )
 
 type Scan struct {
@@ -33,7 +35,8 @@ func (i *Scan) awaitChan(cc int, ch chan bool) {
 }
 
 func (i *Scan) getIP(ip net.IP, c chan bool) {
-	i.parent.Join(ip)
+	i.parent.Join(ip, 0)
+	i.parent.Join(ip, def.GetPort())
 	i.endGo(c)
 }
 

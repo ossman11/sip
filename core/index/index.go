@@ -61,13 +61,16 @@ func (i *Index) JoinNode(newNode Node) {
 				i.Add(newNode)
 			}
 
-			i.Join(newNode.IP)
+			i.Join(newNode.IP, newNode.Port)
 		}
 	}
 }
 
-func (i *Index) Join(ip net.IP) {
-	str := ip.String() + ":" + strconv.Itoa(def.Port)
+func (i *Index) Join(ip net.IP, port int) {
+	if port == 0 {
+		port = def.Port
+	}
+	str := ip.String() + ":" + strconv.Itoa(port)
 	node := ThisNode(i, ip)
 	bod, err := json.Marshal(node)
 	if err != nil {
@@ -163,7 +166,7 @@ func (i *Index) Update() {
 			continue
 		}
 		res, err := i.httpClient.Post(
-			"https://"+v.IP.String()+":"+strconv.Itoa(def.Port)+def.APIIndex,
+			"https://"+v.IP.String()+":"+strconv.Itoa(v.Port)+def.APIIndex,
 			"application/json",
 			bytes.NewBuffer(bod))
 

@@ -2,12 +2,15 @@ package core
 
 import (
 	"crypto/tls"
+	"fmt"
 	"log"
 	"net/http"
+	"strconv"
 	"sync"
 	"time"
 
 	"github.com/ossman11/sip/core/api"
+	"github.com/ossman11/sip/core/def"
 )
 
 // Server interface for the core server functionalities
@@ -51,8 +54,9 @@ func (c *Core) Init() {
 	// Create new instance for the handler and server
 	c.handler = &api.Handler{}
 	c.handler.AddCore()
+	fmt.Println(def.GetPort())
 	c.server = &http.Server{
-		Addr:           ":1670",
+		Addr:           ":" + strconv.Itoa(def.GetPort()),
 		Handler:        c.handler,
 		ReadTimeout:    10 * time.Second,
 		WriteTimeout:   10 * time.Second,

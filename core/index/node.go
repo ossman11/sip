@@ -2,6 +2,8 @@ package index
 
 import (
 	"net"
+
+	"github.com/ossman11/sip/core/def"
 )
 
 // TODO: alive check
@@ -9,6 +11,7 @@ type Node struct {
 	IP   net.IP
 	ID   ID
 	Type Type
+	Port int
 }
 
 func resolveLocalIP(r net.IP) net.IP {
@@ -49,9 +52,11 @@ func ThisNode(i *Index, face net.IP) Node {
 	if i != nil {
 		t = i.Type
 	}
+
 	return Node{
 		IP:   resolveLocalIP(face),
 		ID:   ParseHWID(),
 		Type: t,
+		Port: def.GetPort(),
 	}
 }

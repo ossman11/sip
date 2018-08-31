@@ -8,8 +8,8 @@
     "ports": [
       {
         "protocol": "TCP",
-        "port": 1670,
-        "targetPort": 1670
+        "port": 31670,
+        "targetPort": 31670
       }
     ]
   }
