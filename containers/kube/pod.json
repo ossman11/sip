@@ -28,7 +28,7 @@
             "imagePullPolicy": "Never",
             "ports": [
               {
-                "containerPort": 31670
+                "containerPort": 1670
               }
             ]
           }

@@ -9,7 +9,7 @@
       {
         "protocol": "TCP",
         "port": 31670,
-        "targetPort": 31670
+        "targetPort": 1670
       }
     ]
   }

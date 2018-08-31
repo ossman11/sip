@@ -43,6 +43,11 @@ func (i *Index) AddCon(c Connection) {
 
 func (i *Index) JoinNode(newNode Node) {
 	node := ThisNode(i, newNode.IP)
+
+	if node.IP.String() == "127.0.0.1" {
+		return
+	}
+
 	newConNodes := []*Node{
 		&node,
 		&newNode,
@@ -90,6 +95,7 @@ func (i *Index) Join(ip net.IP, port int) {
 			newNode := Node{}
 			dec := json.NewDecoder(res.Body)
 			err = dec.Decode(&newNode)
+			newNode.IP = ip
 
 			if err != nil {
 				fmt.Println(err)

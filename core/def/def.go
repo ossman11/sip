@@ -1,7 +1,6 @@
 package def
 
 import (
-	"fmt"
 	"os"
 	"strconv"
 )
@@ -11,18 +10,23 @@ const (
 	Port int = 1670
 )
 
+var curPort int
+
 func GetPort() int {
-	nodePort := Port
+	if curPort != 0 {
+		return curPort
+	}
+
+	curPort = Port
 	envPort, ex := os.LookupEnv("PORT")
 	if ex {
-		fmt.Println(envPort)
 		tmpPort, err := strconv.Atoi(envPort)
 		if err != nil {
 			tmpPort = Port
 		}
-		nodePort = tmpPort
+		curPort = tmpPort
 	}
-	return nodePort
+	return GetPort()
 }
 
 const (

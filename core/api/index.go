@@ -78,7 +78,7 @@ func (h *Index) join(w http.ResponseWriter, r *http.Request) {
 			newNode := index.Node{}
 			dec := json.NewDecoder(r.Body)
 			dec.Decode(&newNode)
-			newNode.IP = ip4
+			// newNode.IP = ip4
 
 			h.index.JoinNode(newNode)
 		}
