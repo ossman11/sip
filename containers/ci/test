@@ -21,3 +21,6 @@ until curl -sk "${SIP_URL}/index" | \
 # Print connections result
 curl -sk "${SIP_URL}/index" | \
   python3 -c "import sys, json; print(len(json.load(sys.stdin)['Connections'].keys()))"
+
+# Start go tests
+go test ./... -cover

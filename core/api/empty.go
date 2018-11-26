@@ -16,3 +16,7 @@ func (h Empty) Get() map[string]http.HandlerFunc {
 func (h Empty) Post() map[string]http.HandlerFunc {
 	return map[string]http.HandlerFunc{}
 }
+
+func (h Empty) Running() func() {
+	return func() {}
+}

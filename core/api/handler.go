@@ -15,6 +15,11 @@ type Handler struct {
 
 func (rh *Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	a, ok := rh.gets[r.URL.Path]
+
+	if r.Method == "POST" {
+		a, ok = rh.posts[r.URL.Path]
+	}
+	
 	if ok {
 		w.Header().Add("Strict-Transport-Security", "max-age=63072000; includeSubDomains")
 		a(w, r)
@@ -40,9 +45,8 @@ func (rh *Handler) Add(a API) error {
 		_, ok := rh.gets[k]
 		if ok {
 			return errors.New("Failed to add api: \"" + k + "\", because this api is already assigned.")
-		} else {
-			rh.gets[k] = g[k]
 		}
+		rh.gets[k] = g[k]
 	}
 
 	// Add all the post urls of the current API defention
@@ -51,9 +55,8 @@ func (rh *Handler) Add(a API) error {
 		_, ok := rh.posts[k]
 		if ok {
 			return errors.New("Failed to add api: \"" + k + "\", because this api is already assigned.")
-		} else {
-			rh.posts[k] = p[k]
 		}
+		rh.posts[k] = p[k]
 	}
 
 	rh.Runnings = append(rh.Runnings, a.Running())
@@ -71,14 +74,17 @@ func (rh *Handler) Running() {
 	}
 }
 
+var coreAPIs = []func() API{
+	NewIndex,
+	NewHome,
+}
+
 // AddCore adds the core API implementations to the Handler instance
 func (rh *Handler) AddCore() {
-	err := rh.Add(NewIndex())
-	if err != nil {
-		fmt.Println(err)
-	}
-	err = rh.Add(NewHome())
-	if err != nil {
-		fmt.Println(err)
+	for _, c := range coreAPIs {
+		err := rh.Add(c())
+		if err != nil {
+			fmt.Println(err)
+		}
 	}
 }

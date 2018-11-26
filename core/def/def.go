@@ -34,6 +34,6 @@ const (
 	APIIndex string = "/index"
 	// APIIndexJoin provides the join url for the index API
 	APIIndexJoin string = APIIndex + "/join"
-	// APIIndexNodes provides the nodes url for the index API
-	APIIndexNodes string = APIIndex + "/nodes"
+	// APIIndexCollect provides the collect url for the index API
+	APIIndexCollect string = APIIndex + "/collect"
 )

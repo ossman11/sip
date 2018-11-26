@@ -1,7 +1,6 @@
 package api
 
 import (
-	"crypto/tls"
 	"encoding/json"
 	"fmt"
 	"net"
@@ -14,25 +13,18 @@ import (
 
 // Index the Api interface implementation for the Index Api
 type Index struct {
-	index      *index.Index
-	httpClient *http.Client
+	index *index.Index
 }
 
-func NewIndex() *Index {
+func NewIndex() API {
 	i := &index.Index{}
 	i.Init()
 
-	// Always scan without security enabled
-	tr := &http.Transport{
-		TLSClientConfig: &tls.Config{InsecureSkipVerify: true},
+	ret := Index{
+		index: i,
 	}
 
-	return &Index{
-		index: i,
-		httpClient: &http.Client{
-			Transport: tr,
-		},
-	}
+	return ret
 }
 
 // Action Implements the Index Api behavior
@@ -80,7 +72,7 @@ func (h *Index) join(w http.ResponseWriter, r *http.Request) {
 			dec.Decode(&newNode)
 			// newNode.IP = ip4
 
-			h.index.JoinNode(newNode)
+			h.index.Add(&newNode)
 		}
 
 		if ip6 != nil {
@@ -88,6 +80,20 @@ func (h *Index) join(w http.ResponseWriter, r *http.Request) {
 	}
 
 	enc.Encode(node)
+}
+
+func (h *Index) collect(w http.ResponseWriter, r *http.Request) {
+	enc := json.NewEncoder(w)
+	network := index.Network{}
+
+	if r.Method == "POST" {
+		dec := json.NewDecoder(r.Body)
+		dec.Decode(&network)
+	}
+
+	h.index.Collect(&network)
+
+	enc.Encode(network)
 }
 
 func (h *Index) status(w http.ResponseWriter, r *http.Request) {
@@ -105,18 +111,20 @@ func (h *Index) refresh(w http.ResponseWriter, r *http.Request) {
 // Get Implements the Get API for the Index definition
 func (h Index) Get() map[string]http.HandlerFunc {
 	return map[string]http.HandlerFunc{
-		def.APIIndex:     h.handleIndex,
-		def.APIIndexJoin: h.join,
-		"/index/status":  h.status,
-		"/index/refresh": h.refresh,
+		def.APIIndex:        h.handleIndex,
+		def.APIIndexJoin:    h.join,
+		def.APIIndexCollect: h.collect,
+		"/index/status":     h.status,
+		"/index/refresh":    h.refresh,
 	}
 }
 
 // Post Implements the Post API for the Index definition
 func (h Index) Post() map[string]http.HandlerFunc {
 	return map[string]http.HandlerFunc{
-		def.APIIndex:     h.handleIndex,
-		def.APIIndexJoin: h.join,
+		def.APIIndex:        h.handleIndex,
+		def.APIIndexJoin:    h.join,
+		def.APIIndexCollect: h.collect,
 	}
 }
 

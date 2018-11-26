@@ -5,16 +5,21 @@ import (
 	"net/http"
 )
 
+const (
+	// HomePageContent The text to be displayed on the home page
+	HomePageContent string = "This is the home page."
+)
+
 // Home the Api interface implementation for the Home Api
 type Home struct{}
 
-func NewHome() *Home {
-	return &Home{}
+func NewHome() API {
+	return Home{}
 }
 
 // Action Implements the Home Api behavior
 func home(w http.ResponseWriter, r *http.Request) {
-	fmt.Fprintf(w, "This is the home page.")
+	fmt.Fprintf(w, HomePageContent)
 }
 
 // Get Implements the Get API for the Home definition

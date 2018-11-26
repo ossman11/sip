@@ -18,54 +18,39 @@ import (
 type Index struct {
 	Type        Type
 	Status      Status
-	Connections map[ID]Connection
-	Nodes       map[ID]Node
+	Connections map[ID]*Connection
+	Nodes       map[ID]*Node
 	scanner     Scan
 	httpClient  *http.Client
 	updateChan  chan bool
 	updateNext  bool
 }
 
-func (i *Index) Add(c Node) {
+func (i *Index) Add(c *Node) {
 	i.Nodes[c.ID] = c
 	i.JoinNode(c)
 }
 
-func (i *Index) AddAll(n map[ID]Node) {
+func (i *Index) AddAll(n map[ID]*Node) {
 	for k := range n {
 		i.Add(n[k])
 	}
 }
 
-func (i *Index) AddCon(c Connection) {
+func (i *Index) AddCon(c *Connection) {
 	i.Connections[c.ID] = c
 }
 
-func (i *Index) JoinNode(newNode Node) {
+func (i *Index) JoinNode(newNode *Node) {
 	node := ThisNode(i, newNode.IP)
 
 	if node.IP.String() == "127.0.0.1" {
 		return
 	}
 
-	newConNodes := []*Node{
-		&node,
-		&newNode,
-	}
-	newCon := NewConnection(newConNodes)
-
 	if newNode.IP.String() != node.IP.String() && newNode.ID != node.ID {
 		_, nodeExists := i.Nodes[newNode.ID]
-		_, conExists := i.Connections[newCon.ID]
-		if !nodeExists || !conExists {
-			if !conExists {
-				i.AddCon(newCon)
-			}
-
-			if !nodeExists {
-				i.Add(newNode)
-			}
-
+		if !nodeExists  {
 			i.Join(newNode.IP, newNode.Port)
 		}
 	}
@@ -96,6 +81,7 @@ func (i *Index) Join(ip net.IP, port int) {
 			dec := json.NewDecoder(res.Body)
 			err = dec.Decode(&newNode)
 			newNode.IP = ip
+			newNode.Port = port
 
 			if err != nil {
 				fmt.Println(err)
@@ -109,16 +95,17 @@ func (i *Index) Join(ip net.IP, port int) {
 			newCon := NewConnection(newConNodes)
 
 			change := false
-			_, ex := i.Nodes[newNode.ID]
+			exNode, ex := i.Nodes[newNode.ID]
 			change = ex || change
-			if !ex {
-				i.Add(newNode)
+			updateNode := ex && (exNode.IP.String() != newNode.IP.String() || exNode.Port != newNode.Port)
+			if !ex || updateNode {
+				i.Add(&newNode)
 			}
 
 			_, ex = i.Connections[newCon.ID]
 			change = ex || change
-			if !ex {
-				i.AddCon(newCon)
+			if !ex || updateNode {
+				i.AddCon(&newCon)
 			}
 
 			if change {
@@ -131,13 +118,15 @@ func (i *Index) Join(ip net.IP, port int) {
 func (i *Index) Merge(n *Index) bool {
 	ret := false
 
-	for ck, cv := range n.Connections {
-		_, ex := i.Connections[ck]
-		if !ex {
-			ret = true
-			i.AddCon(cv)
+	/*
+		for ck, cv := range n.Connections {
+			_, ex := i.Connections[ck]
+			if !ex {
+				ret = true
+				i.AddCon(cv)
+			}
 		}
-	}
+	*/
 
 	for nk, nv := range n.Nodes {
 		_, ex := i.Nodes[nk]
@@ -188,7 +177,9 @@ func (i *Index) Update() {
 
 	ch := i.updateChan
 	i.updateChan = nil
-	close(ch)
+	if ch != nil {
+		close(ch)
+	}
 }
 
 func (i *Index) Scan() {
@@ -200,13 +191,38 @@ func (i *Index) Scan() {
 	i.Status = Idle
 }
 
+func (i *Index) Collect(n *Network) {
+	thisNode := ThisNode(i, net.ParseIP("127.0.0.1"))
+	n.Add(i, thisNode.ID)
+
+	bod, _ := json.Marshal(n)
+	for _, v := range i.Nodes {
+		if n.Has(v.ID) {
+			continue
+		}
+
+		res, err := i.httpClient.Post(
+			"https://"+v.IP.String()+":"+strconv.Itoa(v.Port)+def.APIIndexCollect,
+			"application/json",
+			bytes.NewBuffer(bod))
+
+		if err == nil {
+			resBod := Network{}
+			dec := json.NewDecoder(res.Body)
+			err = dec.Decode(&resBod)
+
+			n.Merge(&resBod)
+		}
+	}
+}
+
 func (i *Index) Init() {
 	if i.Nodes == nil {
-		i.Nodes = map[ID]Node{}
+		i.Nodes = map[ID]*Node{}
 	}
 
 	if i.Connections == nil {
-		i.Connections = map[ID]Connection{}
+		i.Connections = map[ID]*Connection{}
 	}
 
 	timeout := time.Duration(30 * time.Second)
@@ -221,7 +237,9 @@ func (i *Index) Init() {
 		Transport: tr,
 	}
 
-	i.Add(ThisNode(i, net.ParseIP("127.0.0.1")))
+	curNode := ThisNode(i, net.ParseIP("127.0.0.1"))
+
+	i.Add(&curNode)
 	if i.scanner == (Scan{}) {
 		i.scanner = NewScan(i)
 	}
