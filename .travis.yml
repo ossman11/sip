@@ -19,6 +19,8 @@ before_script:
 script:
   # Deploy multiple duplicated of this container onto minikube.
   - ./containers/kube/deploy
+  # Setup local certificate for testing
+  - ./crt/make
   # Run all test interacting with the cluster
   - ./containers/ci/test
   # Clean everything from the minikube.
