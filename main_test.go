@@ -54,24 +54,26 @@ func execCmd(str string) {
 }
 
 func setup() {
-	fmt.Println(logSplitter)
-	fmt.Println("Integration test setup: START")
-	fmt.Println(logSplitter)
-	// Ensure that older versions are cleaned up
-	fmt.Println("Clean log:")
-	execCmd("containers/kube/clean")
+	if *integrationSetup {
+		fmt.Println(logSplitter)
+		fmt.Println("Integration test setup: START")
+		fmt.Println(logSplitter)
+		// Ensure that older versions are cleaned up
+		fmt.Println("Clean log:")
+		execCmd("containers/kube/clean")
 
-	// Ensure that the latest changes are build
-	fmt.Println("Build log:")
-	execCmd("containers/build")
+		// Ensure that the latest changes are build
+		fmt.Println("Build log:")
+		execCmd("containers/build")
 
-	// Ensure that the latest changes are deployed
-	fmt.Println("Deploy log:")
-	execCmd("containers/kube/deploy")
+		// Ensure that the latest changes are deployed
+		fmt.Println("Deploy log:")
+		execCmd("containers/kube/deploy")
 
-	// Ensure that the latest changes are exposed
-	fmt.Println("Await log:")
-	execCmd("containers/kube/await")
+		// Ensure that the latest changes are exposed
+		fmt.Println("Await log:")
+		execCmd("containers/kube/await")
+	}
 
 	// Ensure that localhost host a server instance
 	fmt.Println("Local server log:")
@@ -116,7 +118,7 @@ func teardown() {
 func TestMain(m *testing.M) {
 	flag.Parse()
 
-	if *integration && *integrationSetup {
+	if *integration {
 		setup()
 	}
 
