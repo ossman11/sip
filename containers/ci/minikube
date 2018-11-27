@@ -8,13 +8,23 @@ ERR_START_MINIKUBE="Failed to start minikube ${KUBERNETES_VERSION}"
 ERR_UPDATE_MINIKUBE="Failed to update minikube context ${KUBERNETES_VERSION}"
 ERR_BUILD_CONTAINER="Failed to build sip container"
 
+# Prepare minikube configurations
+export MINIKUBE_WANTUPDATENOTIFICATION=false
+export MINIKUBE_WANTREPORTERRORPROMPT=false
+export MINIKUBE_HOME=$HOME
+export CHANGE_MINIKUBE_NONE_USER=true
+
+mkdir $HOME/.kube || true
+touch $HOME/.kube/config
+
+export KUBECONFIG=$HOME/.kube/config
+
 # Download kubectl, which is a requirement for using minikube.
 (curl -sLo kubectl https://storage.googleapis.com/kubernetes-release/release/${KUBERNETES_VERSION}/bin/linux/amd64/kubectl && chmod +x kubectl && sudo mv kubectl /usr/local/bin/) || (printf "${ERR_DOWNLOAD_KUBECTL}" && exit 1)
 # Download minikube.
 (curl -sLo minikube https://storage.googleapis.com/minikube/releases/latest/minikube-linux-amd64 && chmod +x minikube && sudo mv minikube /usr/local/bin/) || (printf "${ERR_DOWNLOAD_MINIKUBE}" && exit 2)
 # Setup minikube.
-sudo minikube config set WantReportErrorPrompt false
-sudo minikube start --vm-driver=none --bootstrapper=localkube --kubernetes-version=${KUBERNETES_VERSION} || (printf "${ERR_START_MINIKUBE}" && exit 3)
+sudo minikube start --vm-driver=none --kubernetes-version=${KUBERNETES_VERSION} || (printf "${ERR_START_MINIKUBE}" && exit 3)
 # Fix the kubectl context, as it's often stale.
 sudo minikube update-context || (printf "${ERR_UPDATE_MINIKUBE}" && exit 4)
 # Build the current state into a docker image.
