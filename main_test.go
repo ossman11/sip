@@ -35,7 +35,7 @@ var (
 // Define test parameters
 var (
 	integration      = flag.Bool("integration", true, "Execute integration tests.")
-	integrationSetup = flag.Bool("setup", true, "Execute integration tests setup steps.")
+	integrationSetup = flag.Bool("setup", false, "Execute integration tests setup steps.")
 )
 
 func execCmd(str string) {
@@ -117,6 +117,8 @@ func teardown() {
 
 func TestMain(m *testing.M) {
 	flag.Parse()
+
+	execCmd("containers/exec")
 
 	if *integration {
 		setup()
