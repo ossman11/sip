@@ -2,6 +2,8 @@ package core
 
 import (
 	"crypto/tls"
+	"fmt"
+	"io"
 	"net/http"
 	"os"
 	"strconv"
@@ -22,6 +24,52 @@ var (
 		Transport: tr,
 	}
 )
+
+func copy(src, dst string) (int64, error) {
+	sourceFileStat, err := os.Stat(src)
+	if err != nil {
+		return 0, err
+	}
+
+	if !sourceFileStat.Mode().IsRegular() {
+		return 0, fmt.Errorf("%s is not a regular file", src)
+	}
+
+	source, err := os.Open(src)
+	if err != nil {
+		return 0, err
+	}
+	defer source.Close()
+
+	destination, err := os.Create(dst)
+	if err != nil {
+		return 0, err
+	}
+
+	defer destination.Close()
+	nBytes, err := io.Copy(destination, source)
+	return nBytes, err
+}
+
+func ensureCrt() error {
+	// Ensure that the certificate files are available
+	os.MkdirAll("crt", os.ModePerm)
+
+	if _, err := os.Stat("crt/server.crt"); os.IsNotExist(err) {
+		_, err = copy("../crt/server.crt", "crt/server.crt")
+		if err != nil {
+			return err
+		}
+	}
+
+	if _, err := os.Stat("crt/server.key"); os.IsNotExist(err) {
+		_, err = copy("../crt/server.key", "crt/server.key")
+		if err != nil {
+			return err
+		}
+	}
+	return nil
+}
 
 func getLocalServer() string {
 	return "https://localhost:" + strconv.Itoa(def.GetPort())
@@ -58,6 +106,12 @@ func TestNewServer(t *testing.T) {
 	})
 
 	t.Run("NewServer() => Start()", func(t *testing.T) {
+
+		err := ensureCrt()
+		if err != nil {
+			t.Errorf("Failed to copy certificates, because: %v", err)
+		}
+
 		res := NewServer()
 
 		port := def.GetPort()
