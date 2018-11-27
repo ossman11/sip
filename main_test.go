@@ -34,7 +34,8 @@ var (
 
 // Define test parameters
 var (
-	integration = flag.Bool("integration", true, "Execute integration tests.")
+	integration      = flag.Bool("integration", true, "Execute integration tests.")
+	integrationSetup = flag.Bool("setup", true, "Execute integration tests setup steps.")
 )
 
 func execCmd(str string) {
@@ -115,13 +116,13 @@ func teardown() {
 func TestMain(m *testing.M) {
 	flag.Parse()
 
-	if *integration {
+	if *integration && *integrationSetup {
 		setup()
 	}
 
 	result := m.Run()
 
-	if *integration {
+	if *integration && *integrationSetup {
 		teardown()
 	}
 

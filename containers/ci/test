@@ -16,11 +16,11 @@ curl -sk "${SIP_URL}"
 printf "\nindex response: ${SIP_URL}/index\n"
 until curl -sk "${SIP_URL}/index" | \
   python3 -c "import sys, json; print(len(json.load(sys.stdin)['Connections'].keys()))" | \
-  grep -q "45"; do sleep 1; done
+  grep -q "9"; do sleep 1; done
 
 # Print connections result
 curl -sk "${SIP_URL}/index" | \
   python3 -c "import sys, json; print(len(json.load(sys.stdin)['Connections'].keys()))"
 
 # Start go tests
-sudo go test -cover -v -timeout=5m
+sudo go test -cover -v -timeout=5m -args -setup=false
