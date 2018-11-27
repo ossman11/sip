@@ -23,4 +23,4 @@ curl -sk "${SIP_URL}/index" | \
   python3 -c "import sys, json; print(len(json.load(sys.stdin)['Connections'].keys()))"
 
 # Start go tests
-sudo go test ./... -cover -v -test.timeout=5m
+sudo go test -cover -v -timeout=5m
