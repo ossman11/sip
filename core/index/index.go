@@ -31,11 +31,13 @@ func (i *Index) Add(c *Node) {
 	i.JoinNode(c)
 }
 
+/* Disabled as it is currently not consumed
 func (i *Index) AddAll(n map[ID]*Node) {
 	for k := range n {
 		i.Add(n[k])
 	}
 }
+*/
 
 func (i *Index) AddCon(c *Connection) {
 	i.Connections[c.ID] = c
@@ -50,7 +52,7 @@ func (i *Index) JoinNode(newNode *Node) {
 
 	if newNode.IP.String() != node.IP.String() && newNode.ID != node.ID {
 		_, nodeExists := i.Nodes[newNode.ID]
-		if !nodeExists  {
+		if !nodeExists {
 			i.Join(newNode.IP, newNode.Port)
 		}
 	}
@@ -62,13 +64,9 @@ func (i *Index) Join(ip net.IP, port int) {
 	}
 	str := ip.String() + ":" + strconv.Itoa(port)
 	node := ThisNode(i, ip)
-	bod, err := json.Marshal(node)
-	if err != nil {
-		fmt.Println(err)
-		return
-	}
+	bod, _ := json.Marshal(node)
 
-	if ip.String() != node.IP.String() {
+	if ip.String() != node.IP.String() || port != node.Port {
 		res, err := i.httpClient.Post(
 			"https://"+str+def.APIIndexJoin,
 			"application/json",
@@ -96,14 +94,14 @@ func (i *Index) Join(ip net.IP, port int) {
 
 			change := false
 			exNode, ex := i.Nodes[newNode.ID]
-			change = ex || change
+			change = !ex || change
 			updateNode := ex && (exNode.IP.String() != newNode.IP.String() || exNode.Port != newNode.Port)
 			if !ex || updateNode {
 				i.Add(&newNode)
 			}
 
 			_, ex = i.Connections[newCon.ID]
-			change = ex || change
+			change = !ex || change
 			if !ex || updateNode {
 				i.AddCon(&newCon)
 			}

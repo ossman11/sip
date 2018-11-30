@@ -2,10 +2,7 @@ package index
 
 import (
 	"fmt"
-	"io"
 	"net"
-	"os"
-	"os/exec"
 )
 
 var HWIDCache string = ""
@@ -44,6 +41,7 @@ func HWID() string {
 	return HWIDCache
 }
 
+/* Unused
 func run(stdout, stderr io.Writer, cmd string, args ...string) error {
 	c := exec.Command(cmd, args...)
 	c.Stdin = os.Stdin
@@ -51,3 +49,4 @@ func run(stdout, stderr io.Writer, cmd string, args ...string) error {
 	c.Stderr = stderr
 	return c.Run()
 }
+*/

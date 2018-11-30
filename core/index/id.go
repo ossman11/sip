@@ -3,7 +3,6 @@ package index
 import (
 	"crypto/sha256"
 	"encoding/hex"
-	"net"
 )
 
 type ID string
@@ -13,6 +12,7 @@ func ParseHWID() ID {
 	return ID(hex.EncodeToString(b[:]))
 }
 
+/* Unused
 func ParseIP(ip net.IP) ID {
 	b := sha256.Sum256([]byte(ip.String()))
 	return ID(hex.EncodeToString(b[:]))
@@ -21,11 +21,13 @@ func ParseIP(ip net.IP) ID {
 func ParseStr(str string) ID {
 	return ID(str)
 }
+*/
 
 func ParseByte(b []byte) ID {
 	return ID(hex.EncodeToString(b[:]))
 }
 
+/* Unused
 func (i *ID) Hash() []byte {
 	ret, _ := hex.DecodeString(i.String())
 	return ret
@@ -60,3 +62,4 @@ func (i *ID) In(ip net.IP) ID {
 
 	return ParseByte(r)
 }
+*/
