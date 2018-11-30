@@ -13,7 +13,7 @@ import (
 
 // machineID returns the uuid returned by `ioreg -rd1 -c IOPlatformExpertDevice`.
 // If there is an error running the commad an empty string is returned.
-func machineID() string {
+func fetchHWID() string {
 	buf := &bytes.Buffer{}
 	err := run(buf, os.Stderr, "ioreg", "-rd1", "-c", "IOPlatformExpertDevice")
 	if err != nil {
