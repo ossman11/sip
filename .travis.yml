@@ -29,11 +29,10 @@ jobs:
 
     - stage: integration
       env:
-        global:
-          # Specifies the kubernetes version.
-          - KUBERNETES_VERSION=v1.10.0
-          # This moves Kubernetes specific config files.
-          - CHANGE_MINIKUBE_NONE_USER=true
+        # Specifies the kubernetes version.
+        - KUBERNETES_VERSION=v1.10.0
+        # This moves Kubernetes specific config files.
+        - CHANGE_MINIKUBE_NONE_USER=true
       before_script:
         # Setup minikube for ci enviroment.
         - ./containers/ci/minikube
