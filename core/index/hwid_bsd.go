@@ -5,6 +5,7 @@ package index
 import (
 	"bytes"
 	"os"
+	"strings"
 )
 
 // Credit: https://github.com/denisbrodbeck/machineid/blob/master/id_bsd.go
@@ -31,7 +32,7 @@ func readHostid() (string, error) {
 	if err != nil {
 		return "", err
 	}
-	return trim(string(buf)), nil
+	return strings.TrimSpace(strings.Trim(string(buf), "\n")), nil
 }
 
 func readKenv() (string, error) {
@@ -40,5 +41,5 @@ func readKenv() (string, error) {
 	if err != nil {
 		return "", err
 	}
-	return trim(buf.String()), nil
+	return strings.TrimSpace(strings.Trim(buf.String(), "\n")), nil
 }

@@ -23,7 +23,7 @@ func machineID() string {
 	if err != nil {
 		return ""
 	}
-	return trim(id)
+	return strings.TrimSpace(strings.Trim(string(id), "\n"))
 }
 
 func extractID(lines string) (string, error) {
