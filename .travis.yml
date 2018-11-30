@@ -21,6 +21,9 @@ jobs:
         - go test ./core/... -v -cover
     - <<: *unit-setup
       os: osx
+      before_script:
+        # OSX comes with a user limit for number of open files
+        - ulimit -n 10000
     - <<: *unit-setup
       os: windows
 
