@@ -6,27 +6,25 @@ stages:
   - unit
   - integration
 
-os:
-  - linux
-  - osx
-  - windows
 
 services:
   - docker
 
 jobs:
   include:
-    - stage: unit
-      os:
-        - linux
-        - osx
-        - windows
+    - &unit-setup
+      stage: unit
       script:
+        # Setup local certificate for testing
+        - ./crt/make
         # Run simple go tests
         - go test ./core/... -v -cover
+    - <<: *unit-setup
+      os: osx
+    - <<: *unit-setup
+      os: windows
 
     - stage: integration
-      os: linux
       env:
         global:
           # Specifies the kubernetes version.
