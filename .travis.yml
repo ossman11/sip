@@ -6,6 +6,9 @@ stages:
   - unit
   - integration
 
+cache:
+  directories:
+    - $HOME/results/
 
 services:
   - docker
@@ -15,10 +18,12 @@ jobs:
     - &unit-setup
       stage: unit
       script:
+        # Ensure result folder exists
+        - mkdir -p $HOME/results/
         # Setup local certificate for testing
         - ./crt/make
         # Run simple go tests
-        - go test ./core/... -v -cover
+        - go test -v -cover -coverprofile $HOME/results/$TRAVIS_OS_NAME.out ./core/...
     - <<: *unit-setup
       os: osx
       before_script:
@@ -45,3 +50,5 @@ jobs:
         - ./containers/ci/test
         # Clean everything from the minikube.
         - ./containers/kube/clean
+        # Print all coverage results from cache
+        - ls $HOME/results/
