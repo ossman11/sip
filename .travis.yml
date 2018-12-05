@@ -6,10 +6,6 @@ stages:
   - unit
   - integration
 
-cache:
-  directories:
-    - $HOME/results/
-
 services:
   - docker
 
@@ -23,7 +19,13 @@ jobs:
         # Setup local certificate for testing
         - ./crt/make
         # Run simple go tests
-        - go test -v -cover -coverprofile $HOME/results/$TRAVIS_OS_NAME.out ./core/...
+        - go test -v -cover -coverprofile "${TRAVIS_OS_NAME}.out" ./core/...
+        # Upload coverage results
+        - curl -X POST -L 
+          -H "Authorization: Bearer ${DRIVE_TOKEN}" 
+          -F "metadata={name : '${TRAVIS_BUILD_NUMBER}/${TRAVIS_OS_NAME}.out'};type=application/json;charset=UTF-8" 
+          -F "file=@${TRAVIS_OS_NAME}.out;type=application/zip" 
+          "https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart"
     - <<: *unit-setup
       os: osx
       before_script:
