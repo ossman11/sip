@@ -21,11 +21,7 @@ jobs:
         # Run simple go tests
         - go test -v -cover -coverprofile "${TRAVIS_OS_NAME}.out" ./core/...
         # Upload coverage results
-        - "curl -X POST -L \
-          -H \"Authorization: Bearer ${DRIVE_TOKEN}\" \
-          -F \"metadata={name : '${TRAVIS_BUILD_NUMBER}/${TRAVIS_OS_NAME}.out'};type=application/json;charset=UTF-8\" \
-          -F \"file=@${TRAVIS_OS_NAME}.out;type=application/zip\" \
-          \"https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart\""
+        - go run ./test
     - <<: *unit-setup
       os: osx
       before_script:
