@@ -21,7 +21,7 @@ jobs:
         # Run simple go tests
         - go test -v -cover -coverprofile "${TRAVIS_OS_NAME}.out" ./core/...
         # Upload coverage results
-        - go run ./test
+        - go run ./test/gdrive.go
     - <<: *unit-setup
       os: osx
       before_script:
