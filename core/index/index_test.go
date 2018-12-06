@@ -5,11 +5,22 @@ import (
 	"net"
 	"net/http"
 	"net/http/httptest"
+	"os"
 	"strconv"
 	"strings"
 	"testing"
 	"time"
+
+	"github.com/ossman11/sip/core/test"
 )
+
+func TestMain(m *testing.M) {
+	test.Integration()
+
+	result := m.Run()
+
+	os.Exit(result)
+}
 
 func newMockIndex() *Index {
 	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
@@ -115,6 +126,17 @@ func TestIndex_Scan(t *testing.T) {
 
 		index.scanner.Running = true
 
+		index.Scan()
+	})
+
+	t.Run("Scan() => integration", func(t *testing.T) {
+
+		if !test.Integration() {
+			t.Skip()
+		}
+
+		index := Index{}
+		index.Init()
 		index.Scan()
 	})
 }

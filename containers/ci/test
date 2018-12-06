@@ -22,5 +22,13 @@ until curl -sk "${SIP_URL}/index" | \
 curl -sk "${SIP_URL}/index" | \
   python3 -c "import sys, json; print(len(json.load(sys.stdin)['Connections'].keys()))"
 
+# Start the local integration test server
+go run . &
+
+# Fetch home page
+LOCAL_SIP_URL = "https://localhost:1670"
+printf "\nhome response: ${LOCAL_SIP_URL}\n"
+curl -sk "${LOCAL_SIP_URL}"
+
 # Start go tests
-go test ./... -cover -v -args
+go test ./... -cover -v -args -integration
