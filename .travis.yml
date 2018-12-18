@@ -15,13 +15,12 @@ services:
 notifications:
   webhooks: https://coveralls.io/webhook
 
-jobs:
-  include:
-    - &coveralls
-      after_install: go get github.com/mattn/goveralls
-      after_script: goveralls -coverprofile="coverage.out" -service=travis-ci -repotoken $COVERALLS_TOKEN
+definitions:
+  - &coveralls
+    after_install: go get github.com/mattn/goveralls
+    after_script: goveralls -coverprofile="coverage.out" -service=travis-ci -repotoken $COVERALLS_TOKEN
 
-    - &unit-setup
+  - &unit-setup
       <<: *coveralls
       stage: unit
       script:
@@ -31,6 +30,10 @@ jobs:
         - ./crt/make
         # Run simple go tests
         - go test -v -cover -coverprofile "coverage.out" ./core/...
+
+jobs:
+  include:
+    - <<: *unit-setup
     - <<: *unit-setup
       os: osx
       before_script:
