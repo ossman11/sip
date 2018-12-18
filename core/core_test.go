@@ -1,28 +1,13 @@
 package core
 
 import (
-	"crypto/tls"
 	"fmt"
 	"io"
-	"net/http"
 	"os"
-	"strconv"
 	"testing"
 
 	"github.com/ossman11/sip/core/api"
-	"github.com/ossman11/sip/core/def"
-)
-
-// Define http information
-var (
-	// Disable tls until properly adopted
-	tr = &http.Transport{
-		TLSClientConfig: &tls.Config{InsecureSkipVerify: true},
-	}
-	// Expose insecure http client
-	httpClient = &http.Client{
-		Transport: tr,
-	}
+	"github.com/ossman11/sip/core/test"
 )
 
 func copy(src, dst string) (int64, error) {
@@ -71,10 +56,6 @@ func ensureCrt() error {
 	return nil
 }
 
-func getLocalServer() string {
-	return "https://localhost:" + strconv.Itoa(def.GetPort())
-}
-
 func TestNewServer(t *testing.T) {
 	t.Run("NewServer() => default", func(t *testing.T) {
 		res := NewServer()
@@ -106,34 +87,21 @@ func TestNewServer(t *testing.T) {
 	})
 
 	t.Run("NewServer() => Start()", func(t *testing.T) {
-
 		err := ensureCrt()
 		if err != nil {
 			t.Errorf("Failed to copy certificates, because: %v", err)
 		}
 
+		test.FindPort()
+		defer test.OpenPort()
+
 		res := NewServer()
-
-		res.Init()
-		res.handler.Runnings = nil
-
-		port := def.GetPort()
-
-		for true {
-			_, err := httpClient.Get(getLocalServer())
-
-			if err == nil {
-				port++
-				os.Setenv("PORT", strconv.Itoa(port))
-			} else {
-				break
-			}
-		}
-
 		go res.Start()
 
+		httpClient := test.HttpClient()
+
 		for true {
-			_, err := httpClient.Get(getLocalServer())
+			_, err := httpClient.Get(test.HttpServer())
 
 			if err == nil {
 				break

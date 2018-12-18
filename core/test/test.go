@@ -5,6 +5,7 @@ import (
 	"flag"
 	"fmt"
 	"net/http"
+	"os"
 	"strconv"
 
 	"github.com/ossman11/sip/core/def"
@@ -77,4 +78,26 @@ func Integration() bool {
 	ready = true
 
 	return true
+}
+
+var lastPort = 0
+
+func FindPort() {
+	port := def.GetPort()
+	lastPort = port
+
+	for true {
+		_, err := HttpClient().Get(HttpServer())
+
+		if err == nil {
+			port++
+			os.Setenv("PORT", strconv.Itoa(port))
+		} else {
+			break
+		}
+	}
+}
+
+func OpenPort() {
+	os.Setenv("PORT", strconv.Itoa(lastPort))
 }

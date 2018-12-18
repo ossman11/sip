@@ -10,23 +10,15 @@ const (
 	Port int = 1670
 )
 
-var curPort int
-
 func GetPort() int {
-	if curPort != 0 {
-		return curPort
-	}
-
-	curPort = Port
 	envPort, ex := os.LookupEnv("PORT")
 	if ex {
 		tmpPort, err := strconv.Atoi(envPort)
-		if err != nil {
-			tmpPort = Port
+		if err == nil {
+			return tmpPort
 		}
-		curPort = tmpPort
 	}
-	return GetPort()
+	return Port
 }
 
 const (
