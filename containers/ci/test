@@ -31,4 +31,4 @@ printf "\nhome response: ${LOCAL_SIP_URL}\n"
 curl -sk "${LOCAL_SIP_URL}"
 
 # Start go tests
-go test ./... -cover -coverprofile integration.out -v -args
+go test ./... -cover -coverprofile "coverage.out" -v -args

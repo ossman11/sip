@@ -12,9 +12,17 @@ stages:
 services:
   - docker
 
+notifications:
+  webhooks: https://coveralls.io/webhook
+
 jobs:
   include:
+    - &coveralls
+      after_install: go get github.com/mattn/goveralls
+      after_script: goveralls -coverprofile="coverage.out" -service=travis-ci -repotoken $COVERALLS_TOKEN
+
     - &unit-setup
+      <<: *coveralls
       stage: unit
       script:
         # Ensure result folder exists
@@ -22,9 +30,7 @@ jobs:
         # Setup local certificate for testing
         - ./crt/make
         # Run simple go tests
-        - go test -v -cover -coverprofile "${TRAVIS_OS_NAME}.out" ./core/...
-        # Upload coverage results
-        - go run ./test/gdrive.go
+        - go test -v -cover -coverprofile "coverage.out" ./core/...
     - <<: *unit-setup
       os: osx
       before_script:
@@ -34,6 +40,7 @@ jobs:
       os: windows
 
     - stage: integration
+      <<: *coveralls
       env:
         # Specifies the kubernetes version.
         - KUBERNETES_VERSION=v1.10.0
