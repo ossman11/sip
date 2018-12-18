@@ -63,7 +63,6 @@ func (c *Core) Init() {
 		MaxHeaderBytes: 1 << 20,
 		TLSConfig:      cfg,
 	}
-	c.handler.Running()
 	c.ready = true
 	c.busy.Unlock()
 }
@@ -71,6 +70,7 @@ func (c *Core) Init() {
 // Starts the core instance
 func (c *Core) Start() {
 	c.Init()
+	c.handler.Running()
 	log.Fatal(c.server.ListenAndServeTLS("crt/server.crt", "crt/server.key"))
 	// log.Fatal(c.server.ListenAndServe())
 }

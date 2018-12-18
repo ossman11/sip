@@ -114,6 +114,9 @@ func TestNewServer(t *testing.T) {
 
 		res := NewServer()
 
+		res.Init()
+		res.handler.Runnings = nil
+
 		port := def.GetPort()
 
 		for true {
