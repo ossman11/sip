@@ -16,20 +16,17 @@ notifications:
   webhooks: https://coveralls.io/webhook
 
 definitions:
-  - &coveralls
-    after_install: go get github.com/mattn/goveralls
-    after_script: goveralls -coverprofile="coverage.out" -service=travis-ci -repotoken $COVERALLS_TOKEN
+  coveralls: &coveralls
+    go get github.com/mattn/goveralls && goveralls -coverprofile="coverage.out" -service=travis-ci -repotoken $COVERALLS_TOKEN
 
-  - &unit-setup
-      <<: *coveralls
+  unit-setup: &unit-setup
       stage: unit
       script:
-        # Ensure result folder exists
-        - mkdir -p $HOME/results/
         # Setup local certificate for testing
         - ./crt/make
         # Run simple go tests
         - go test -v -cover -coverprofile "coverage.out" ./core/...
+        - *coveralls
 
 jobs:
   include:
@@ -43,7 +40,6 @@ jobs:
 #      os: windows
 
     - stage: integration
-      <<: *coveralls
       env:
         # Specifies the kubernetes version.
         - KUBERNETES_VERSION=v1.10.0
@@ -61,5 +57,4 @@ jobs:
         - ./containers/ci/test
         # Clean everything from the minikube.
         - ./containers/kube/clean
-        # Print all coverage results from cache
-        - ls $HOME/results/
+        - *coveralls
