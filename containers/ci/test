@@ -26,7 +26,7 @@ curl -sk "${SIP_URL}/index" | \
 go run . &
 
 # Fetch home page
-LOCAL_SIP_URL = "https://localhost:1670"
+LOCAL_SIP_URL="https://localhost:1670"
 printf "\nhome response: ${LOCAL_SIP_URL}\n"
 curl -sk "${LOCAL_SIP_URL}"
 
