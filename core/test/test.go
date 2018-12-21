@@ -14,7 +14,7 @@ import (
 var (
 	logSplitter = "====================================================="
 	ready       = false
-	integration = flag.Bool("integration", true, "Execute integration tests.")
+	integration = flag.Bool("integration", false, "Execute integration tests.")
 )
 
 func HttpClient() *http.Client {
