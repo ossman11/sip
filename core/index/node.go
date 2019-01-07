@@ -58,6 +58,7 @@ func resolveLocalIP(r net.IP) net.IP {
 
 	return net.ParseIP(ret)
 }
+
 func ThisNode(i *Index, face net.IP) Node {
 	t := Unknown
 	if i != nil {
