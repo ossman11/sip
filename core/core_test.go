@@ -7,7 +7,7 @@ import (
 	"testing"
 
 	"github.com/ossman11/sip/core/api"
-	"github.com/ossman11/sip/core/test"
+	"github.com/ossman11/sip/core/def"
 )
 
 func copy(src, dst string) (int64, error) {
@@ -92,16 +92,16 @@ func TestNewServer(t *testing.T) {
 			t.Errorf("Failed to copy certificates, because: %v", err)
 		}
 
-		test.FindPort()
-		defer test.OpenPort()
+		def.FindPort()
+		defer def.OpenPort()
 
 		res := NewServer()
 		go res.Start()
 
-		httpClient := test.HttpClient()
+		httpClient := def.HttpClient()
 
 		for true {
-			_, err := httpClient.Get(test.HttpServer())
+			_, err := httpClient.Get(def.HttpServer())
 
 			if err == nil {
 				break

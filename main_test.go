@@ -1,33 +1,28 @@
 package main
 
 import (
-	"flag"
 	"fmt"
 	"io/ioutil"
 	"os"
 	"testing"
 
-	"github.com/ossman11/sip/core/test"
+	"github.com/ossman11/sip/core/def"
 )
 
 func TestMain(m *testing.M) {
-	flag.Parse()
-
-	test.Integration()
-
+	def.Integration()
 	result := m.Run()
-
 	os.Exit(result)
 }
 
 func TestCore(t *testing.T) {
 
-	if !test.Integration() {
+	if !def.Integration() {
 		t.Skip()
 	}
 
-	httpClient := test.HttpClient()
-	res, err := httpClient.Get(test.HttpServer())
+	httpClient := def.HttpClient()
+	res, err := httpClient.Get(def.HttpServer())
 
 	if err != nil {
 		t.Errorf("Failed to connect to the local server with the error: %s", err)

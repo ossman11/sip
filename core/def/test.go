@@ -1,4 +1,4 @@
-package test
+package def
 
 import (
 	"crypto/tls"
@@ -7,8 +7,6 @@ import (
 	"net/http"
 	"os"
 	"strconv"
-
-	"github.com/ossman11/sip/core/def"
 )
 
 var (
@@ -32,7 +30,7 @@ func HttpClient() *http.Client {
 
 func HttpServer() string {
 	// Prepare local server url for easy consumption
-	httpServer := "https://localhost:" + strconv.Itoa(def.GetPort())
+	httpServer := "https://localhost:" + strconv.Itoa(GetPort())
 
 	return httpServer
 }
@@ -83,7 +81,7 @@ func Integration() bool {
 var lastPort = 0
 
 func FindPort() {
-	port := def.GetPort()
+	port := GetPort()
 	lastPort = port
 
 	for true {

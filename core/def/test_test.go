@@ -1,9 +1,7 @@
-package test
+package def
 
 import (
 	"testing"
-
-	"github.com/ossman11/sip/core/def"
 )
 
 func TestIntegration(t *testing.T) {
@@ -14,11 +12,11 @@ func TestIntegration(t *testing.T) {
 
 func TestFindPort(t *testing.T) {
 	t.Run("FindPort()", func(t *testing.T) {
-		port := def.GetPort()
+		port := GetPort()
 		FindPort()
 		OpenPort()
 
-		if port != def.GetPort() {
+		if port != GetPort() {
 			t.Errorf("Failed to revert OpenPort() lookup back to previous state.")
 		}
 	})

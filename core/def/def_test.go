@@ -7,7 +7,6 @@ import (
 )
 
 func TestGetPort(t *testing.T) {
-
 	t.Run("GetPort() => default", func(t *testing.T) {
 		res := GetPort()
 		if res != Port {

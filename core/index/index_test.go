@@ -11,11 +11,11 @@ import (
 	"testing"
 	"time"
 
-	"github.com/ossman11/sip/core/test"
+	"github.com/ossman11/sip/core/def"
 )
 
 func TestMain(m *testing.M) {
-	test.Integration()
+	def.Integration()
 
 	result := m.Run()
 
@@ -131,7 +131,7 @@ func TestIndex_Scan(t *testing.T) {
 
 	t.Run("Scan() => integration", func(t *testing.T) {
 
-		if !test.Integration() {
+		if !def.Integration() {
 			t.Skip()
 		}
 
