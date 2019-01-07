@@ -1,7 +1,6 @@
 package index
 
 import (
-	"fmt"
 	"math"
 	"math/rand"
 	"net"
@@ -121,8 +120,11 @@ func testNetworkCyclic() *Network {
 func testNetworkDeep() *Network {
 	network := Network{}
 
+	nodeCount := 100
+	maxConnections := 25
+
 	i := 0
-	for i < 100 {
+	for i < nodeCount {
 		i++
 		cid := ID("Node" + strconv.Itoa(i))
 		cn := mockNode(cid)
@@ -132,17 +134,17 @@ func testNetworkDeep() *Network {
 	}
 
 	i = 0
-	for i < 100 {
+	for i < nodeCount {
 		i++
 		cid := ID("Node" + strconv.Itoa(i))
 		ci := network.Indexs[cid]
 
-		ccnr := math.Ceil(testRandom.Float64()*20) + 2
+		ccnr := math.Ceil(testRandom.Float64()*float64(maxConnections)) + 2
 
 		for ccnr > 0 {
 			tid := cid
 			for tid == cid {
-				tid = ID("Node" + strconv.Itoa(int(math.Ceil(testRandom.Float64()*100))))
+				tid = ID("Node" + strconv.Itoa(int(math.Ceil(testRandom.Float64()*float64(nodeCount)))))
 			}
 
 			ti := network.Indexs[tid]
@@ -158,36 +160,147 @@ func testNetworkDeep() *Network {
 	return &network
 }
 
-func TestNetwork_GetRoutes(t *testing.T) {
-	t.Run("GetRoutes() => direct", func(t *testing.T) {
+func TestNetwork_Path(t *testing.T) {
+	t.Run("Path() => direct", func(t *testing.T) {
 		network := testNetworkDirect()
-		fmt.Println(network.Paths)
+		err, p := network.Path("Node1", "Node2")
+
+		if err != nil {
+			t.Error(err)
+		}
+
+		if p[1] == nil {
+			t.Error("Failed to find the direct link inside the direct network.\n", p)
+		}
 	})
 
-	t.Run("GetRoutes() => nested", func(t *testing.T) {
+	t.Run("Path() => nested", func(t *testing.T) {
 		network := testNetworkNested()
-		fmt.Println(network.Paths)
+		err, p := network.Path("Node1", "Node3")
+
+		if err != nil {
+			t.Error(err)
+		}
+
+		if p[1] != nil {
+			t.Error("Found a direct link inside the nested network.\n", p)
+		}
+
+		if p[2] == nil {
+			t.Error("Failed to find the nested link inside the nested network.\n", p)
+		}
 	})
 
-	t.Run("GetRoutes() => cyclic", func(t *testing.T) {
+	t.Run("Path() => cyclic", func(t *testing.T) {
 		network := testNetworkCyclic()
-		fmt.Println(network.Paths)
+		err, p := network.Path("Node1", "Node3")
+
+		if err != nil {
+			t.Error(err)
+		}
+
+		if p[1] == nil {
+			t.Error("Failed to find the direct link inside the cyclic network.\n", p)
+		}
+
+		if p[2] == nil {
+			t.Error("Failed to find the nested link inside the cyclic network.\n", p)
+		}
 	})
 
-	t.Run("GetRoutes() => deep", func(t *testing.T) {
+	t.Run("Path() => deep", func(t *testing.T) {
 		network := testNetworkDeep()
 		err, p := network.Path("Node1", "Node100")
-		fmt.Println(err)
-		fmt.Println(p)
+
+		if err != nil {
+			t.Error(err)
+		}
+
+		for _, sp := range p {
+			for _, cv := range sp {
+				last := ID("Node1")
+				for i, n := range cv.Nodes {
+					if i == 0 {
+						if last == n {
+							continue
+						}
+						t.Error("Failed to traverse path as it does not start at the correct Node.")
+					}
+
+					if last == n {
+						t.Error("Failed to traverse path as path contains same node ID twice.")
+					}
+
+					cn := network.Indexs[n]
+					if cn.Connections[NewIDConnection([]*Node{cn.Nodes[n], network.Indexs[last].Nodes[last]})] == nil {
+						t.Error("Failed to traverse path as it is using invalid connections.\n", cv.Nodes)
+					}
+
+					last = n
+				}
+			}
+		}
+	})
+
+	t.Run("Path() => missing path", func(t *testing.T) {
+		network := testNetworkDirect()
+
+		n3 := mockNode("Node3")
+		i3 := mockIndex()
+		network.Add(i3, n3.ID)
+
+		err, p := network.Path("Node1", "Node3")
+
+		if p != nil {
+			t.Error("Succeeded to find path that should not exist.")
+		}
+
+		if err == nil {
+			t.Error("Did not retrieve error message from failing Path lookup.")
+		}
+	})
+
+	t.Run("Path() => missing target index", func(t *testing.T) {
+		network := testNetworkDirect()
+		network.Paths = nil
+		err, p := network.Path("Node1", "Node3")
+
+		if p != nil {
+			t.Error("Succeeded to find path that should not exist.")
+		}
+
+		if err == nil {
+			t.Error("Did not retrieve error message from failing Path lookup.")
+		}
+	})
+
+	t.Run("Path() => missing start index", func(t *testing.T) {
+		network := testNetworkDirect()
+		network.Paths = nil
+		err, p := network.Path("Node3", "Node1")
+
+		if p != nil {
+			t.Error("Succeeded to find path that should not exist.")
+		}
+
+		if err == nil {
+			t.Error("Did not retrieve error message from failing Path lookup.")
+		}
 	})
 }
 
-func TestNetwork_Path(t *testing.T) {
-	t.Run("Path() => Direct Link", func(t *testing.T) {
-		network := testNetworkDirect()
+func TestNetwork_AddRoute(t *testing.T) {
+	t.Run("AddRoute() => initialize", func(t *testing.T) {
+		n1 := mockNode("Node1")
+		n2 := mockNode("Node2")
 
-		err, p := network.Path("Node1", "Node2")
-		fmt.Println(err)
-		fmt.Println(p)
+		r := NewRoute([]ID{n1.ID, n2.ID})
+
+		network := Network{}
+		network.AddRoute(r.ID, &r)
+
+		if network.Paths == nil || network.Paths[r.ID] == nil {
+			t.Error("Failed to setup Paths cache properly for new Route.")
+		}
 	})
 }

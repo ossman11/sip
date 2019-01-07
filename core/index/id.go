@@ -60,8 +60,7 @@ func NewIDHash(newID string) ID {
 }
 
 func NewID(newID string) ID {
-	b := []byte(newID)
-	return ParseByte(b[:])
+	return ID(newID)
 }
 
 /* Unused

@@ -15,7 +15,7 @@ func (r *Route) Has(id ID) bool {
 }
 
 func (r *Route) Equal(t *Route) bool {
-	if len(r.Nodes) != len(t.Nodes) {
+	if r.Len() != t.Len() {
 		return false
 	}
 

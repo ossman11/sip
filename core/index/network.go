@@ -180,10 +180,22 @@ func (n *Network) AddRoute(i ID, r *Route) {
 func (n *Network) Path(s, t ID) (error, map[int][]*Route) {
 	tr := NewRoute([]ID{s, t})
 
-	if n.Paths == nil || n.Paths[s] == nil || n.Paths[s][tr.ID] == nil {
+	errMsg := ""
+
+	if n.Paths == nil ||
+		n.Paths[s] == nil || n.Paths[t] == nil ||
+		n.Paths[s][tr.ID] == nil {
 		if n.Indexs[s] == nil {
-			errMsg := string("Failed to lookup path between Node \"" + s + "\" and \"" + t + "\"" +
+			errMsg = string("Failed to lookup path between Node \"" + s + "\" and \"" + t + "\"" +
 				", because starting Node with ID: " + s + " was not found.")
+		}
+
+		if n.Indexs[t] == nil {
+			errMsg = string("Failed to lookup path between Node \"" + s + "\" and \"" + t + "\"" +
+				", because starting Node with ID: " + t + " was not found.")
+		}
+
+		if errMsg != "" {
 			return errors.New(errMsg), nil
 		}
 
@@ -191,7 +203,7 @@ func (n *Network) Path(s, t ID) (error, map[int][]*Route) {
 	}
 
 	if n.Paths[s][tr.ID] == nil {
-		errMsg := string("Failed to lookup path between Node \"" + s + "\" and \"" + t + "\"" +
+		errMsg = string("Failed to lookup path between Node \"" + s + "\" and \"" + t + "\"" +
 			", because no known path was found.")
 		return errors.New(errMsg), nil
 	}
