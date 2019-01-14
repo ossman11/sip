@@ -18,6 +18,9 @@ notifications:
 definitions:
   coveralls: &coveralls
     go get github.com/mattn/goveralls && goveralls -coverprofile="coverage.out" -service=travis-ci -repotoken $COVERALLS_TOKEN
+  
+  codecov: &codecov
+    bash <(curl -s https://codecov.io/bash)
 
   unit-setup: &unit-setup
       stage: unit
@@ -27,6 +30,7 @@ definitions:
         # Run simple go tests
         - go test -v -cover -coverprofile "coverage.out" ./core/...
         - *coveralls
+        - *codecov
 
 jobs:
   include:
@@ -58,3 +62,4 @@ jobs:
         # Clean everything from the minikube.
         - ./containers/kube/clean
         - *coveralls
+        - *codecov
