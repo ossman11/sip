@@ -87,12 +87,6 @@ func TestIntegration(t *testing.T) {
 
 func TestFindPort(t *testing.T) {
 	t.Run("FindPort()", func(t *testing.T) {
-		port := GetPort()
 		FindPort()
-		OpenPort()
-
-		if port != GetPort() {
-			t.Errorf("Failed to revert OpenPort() lookup back to previous state.")
-		}
 	})
 }

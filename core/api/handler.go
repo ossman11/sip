@@ -19,9 +19,12 @@ func (rh *Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	if r.Method == "POST" {
 		a, ok = rh.posts[r.URL.Path]
 	}
-	
+
 	if ok {
 		w.Header().Add("Strict-Transport-Security", "max-age=63072000; includeSubDomains")
+		w.Header().Add("Access-Control-Allow-Origin", "*")
+		w.Header().Add("Access-Control-Allow-Credentials", "false")
+		w.Header().Add("Access-Control-Allow-Headers", "Client-Protocol, Content-Length, Content-Type")
 		a(w, r)
 	} else {
 		http.NotFound(w, r)

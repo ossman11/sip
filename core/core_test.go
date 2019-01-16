@@ -93,7 +93,6 @@ func TestNewServer(t *testing.T) {
 		}
 
 		def.FindPort()
-		defer def.OpenPort()
 
 		res := NewServer()
 		go res.Start()

@@ -174,7 +174,7 @@ func TestIndex_join(t *testing.T) {
 		resp := w.Result()
 		body, _ := ioutil.ReadAll(resp.Body)
 
-		if resp.StatusCode != 200 {
+		if resp.StatusCode != 500 {
 			t.Errorf("Failed to use join(), because StatusCode was %v.", resp.StatusCode)
 		}
 
@@ -182,22 +182,11 @@ func TestIndex_join(t *testing.T) {
 			t.Errorf("Failed to use join(), because Content-Type was %v.", resp.Header.Get("Content-Type"))
 		}
 
-		e := httptest.NewRecorder()
-		enc := json.NewEncoder(e)
+		expt := "Failed to resolve user-agent platform."
+		bodyStr := strings.Trim(string(body), " \n")
 
-		strIP := req.RemoteAddr
-		ipEnd := strings.LastIndex(strIP, ":")
-		ip := net.ParseIP(strIP[:ipEnd])
-		ip4 := ip.To4()
-
-		node := index.ThisNode(testIndex.index, ip4)
-		enc.Encode(node)
-
-		expt := e.Result()
-		exptBytes, _ := ioutil.ReadAll(expt.Body)
-
-		if string(body) != string(exptBytes) {
-			t.Errorf("Failed to use join(), because Body was:\n  %v\n  Expecting:\n  %v.", string(body), string(exptBytes))
+		if bodyStr != expt {
+			t.Errorf("Failed to use join(), because Body was:\n  %v\n  Expecting:\n  %v.", bodyStr, expt)
 		}
 	})
 

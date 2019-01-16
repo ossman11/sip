@@ -3,11 +3,12 @@ package index
 import (
 	"encoding/binary"
 	"fmt"
-	"log"
 	"net"
 
 	"github.com/ossman11/sip/core/def"
 )
+
+var getInterfaces = net.Interfaces
 
 type Scan struct {
 	parent  *Index
@@ -35,7 +36,7 @@ func (i *Scan) awaitChan(cc int, ch chan bool) {
 }
 
 func (i *Scan) getIP(ip net.IP, c chan bool) {
-	i.parent.Join(ip, 0)
+	// i.parent.Join(ip, 0)
 	i.parent.Join(ip, def.GetPort())
 	i.endGo(c)
 }
@@ -52,10 +53,7 @@ func (i *Scan) walkIP(ipnet *net.IPNet, c chan bool) {
 
 	ip &= mask
 	mask = mask | 0xffffff00
-	// Skip networks that have to large masks
-	if 0xffffffff-mask > 1<<8 {
-		return
-	}
+	fmt.Println(0xffffffff - mask)
 
 	cc, ch := i.startChan(0)
 
@@ -79,22 +77,13 @@ func (i *Scan) walkIP(ipnet *net.IPNet, c chan bool) {
 }
 
 func (i *Scan) scanIP(ipnet *net.IPNet, c chan bool) bool {
-	filter := func(ipnet *net.IPNet) bool {
-		if ipnet.IP[0] == 127 {
-			return false
-		}
-		return true
-	}
-
 	ip4 := ipnet.IP.To4()
 	if ip4 != nil {
 		addr := &net.IPNet{
 			IP:   ip4,
 			Mask: ipnet.Mask[len(ipnet.Mask)-4:],
 		}
-		if filter(addr) {
-			go i.walkIP(addr, c)
-		}
+		go i.walkIP(addr, c)
 	} else {
 		return false
 	}
@@ -102,10 +91,10 @@ func (i *Scan) scanIP(ipnet *net.IPNet, c chan bool) bool {
 }
 
 func (i *Scan) scanInteface(iface net.Interface, c chan bool) {
-
 	as, err := iface.Addrs()
 	if err != nil {
-		log.Fatal(err)
+		fmt.Println(err)
+		return
 	}
 
 	cc, ch := i.startChan(len(as) + 1)
@@ -128,10 +117,12 @@ func (i *Scan) Scan() {
 		return
 	}
 	i.Running = true
+	defer func() { i.Running = false }()
 
-	faces, err := net.Interfaces()
+	faces, err := getInterfaces()
 	if err != nil {
-		log.Fatal(err)
+		fmt.Println(err)
+		return
 	}
 
 	cc, ch := i.startChan(0)
@@ -145,7 +136,6 @@ func (i *Scan) Scan() {
 	}
 
 	i.awaitChan(cc, ch)
-	i.Running = false
 }
 
 func NewScan(p *Index) Scan {

@@ -4,6 +4,7 @@ import (
 	"crypto/tls"
 	"flag"
 	"fmt"
+	"net"
 	"net/http"
 	"os"
 	"strconv"
@@ -78,24 +79,13 @@ func Integration() bool {
 	return true
 }
 
-var lastPort = 0
-
 func FindPort() {
-	port := GetPort()
-	lastPort = port
-
-	for true {
-		_, err := HttpClient().Get(HttpServer())
-
-		if err == nil {
-			port++
-			os.Setenv("PORT", strconv.Itoa(port))
-		} else {
-			break
-		}
+	listener, err := net.Listen("tcp", ":0")
+	if err != nil {
+		panic(err)
 	}
-}
+	defer listener.Close()
 
-func OpenPort() {
-	os.Setenv("PORT", strconv.Itoa(lastPort))
+	port := listener.Addr().(*net.TCPAddr).Port
+	os.Setenv("PORT", strconv.Itoa(port))
 }

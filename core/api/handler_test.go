@@ -246,7 +246,7 @@ func TestHandler_ServeHTTP(t *testing.T) {
 			t.Errorf("Failed to use ServeHTTP(), because StatusCode was %v.", resp.StatusCode)
 		}
 
-		if resp.Header.Get("Content-Type") != "text/plain; charset=utf-8" {
+		if resp.Header.Get("Content-Type") != "text/html; charset=utf-8" {
 			t.Errorf("Failed to use ServeHTTP(), because Content-Type was %v.", resp.Header.Get("Content-Type"))
 		}
 

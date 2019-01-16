@@ -3,8 +3,10 @@ package api
 import (
 	"encoding/json"
 	"fmt"
+	"io"
 	"net"
 	"net/http"
+	"os"
 	"strings"
 
 	"github.com/ossman11/sip/core/def"
@@ -77,9 +79,36 @@ func (h *Index) join(w http.ResponseWriter, r *http.Request) {
 
 		if ip6 != nil {
 		}
+
+		enc.Encode(node)
 	}
 
-	enc.Encode(node)
+	if r.Method == "GET" {
+		userAgent := r.Header.Get("user-agent")
+
+		if userAgent == "" {
+			http.Error(w, "Failed to resolve user-agent platform.", http.StatusInternalServerError)
+		}
+
+		targetOS, targetArch := index.UserAgent(userAgent)
+
+		err := index.Build(targetOS, targetArch)
+		if err != nil {
+			fmt.Println(err)
+			http.Error(w, "Failed to compile target binaries.", 500)
+			return
+		}
+
+		tmpFile, err := os.Open(".tmp/" + targetOS + "-" + targetArch)
+		if err != nil {
+			fmt.Println(err)
+			http.Error(w, "Failed to open target binaries.", 500)
+			return
+		}
+		defer tmpFile.Close()
+
+		io.Copy(w, tmpFile)
+	}
 }
 
 func (h *Index) collect(w http.ResponseWriter, r *http.Request) {

@@ -4,6 +4,7 @@
 *.dll
 *.so
 *.dylib
+*.wasm
 
 # Test binary, build with `go test -c`
 *.test
@@ -17,3 +18,9 @@ debug
 # Development certificates and keys
 *.crt
 *.key
+
+# Prevent binary zip files from being commited
+*.zip
+
+# Allow .tmp folder to be used for sotring files  
+.tmp
