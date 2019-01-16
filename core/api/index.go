@@ -88,6 +88,7 @@ func (h *Index) join(w http.ResponseWriter, r *http.Request) {
 
 		if userAgent == "" {
 			http.Error(w, "Failed to resolve user-agent platform.", http.StatusInternalServerError)
+			return
 		}
 
 		targetOS, targetArch := index.UserAgent(userAgent)
