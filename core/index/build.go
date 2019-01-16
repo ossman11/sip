@@ -279,8 +279,13 @@ func getGo() error {
 	}
 	defer file.Close()
 
+	archiveExtension := ".tar.gz"
+	if runtime.GOOS == "windows" {
+		archiveExtension = ".zip"
+	}
+
 	dlURL := "https://dl.google.com/go/" +
-		runtime.Version() + "." + runtime.GOOS + "-" + runtime.GOARCH + ".zip"
+		runtime.Version() + "." + runtime.GOOS + "-" + runtime.GOARCH + archiveExtension
 	res, err := http.Get(dlURL)
 	if err != nil {
 		return err
