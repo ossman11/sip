@@ -90,3 +90,16 @@ func TestBuild(t *testing.T) {
 		}
 	})
 }
+
+func TestUserAgent(t *testing.T) {
+	t.Run("userAgent()", func(t *testing.T) {
+		targetOS, targetArch := UserAgent("Browser/Version (" + runtime.GOOS + "; " + runtime.GOARCH + ";)")
+		if targetOS != runtime.GOOS {
+			t.Error("Failed to detect correct operating system.")
+		}
+
+		if targetArch != runtime.GOARCH {
+			t.Error("Failed to detect correct architecture.")
+		}
+	})
+}

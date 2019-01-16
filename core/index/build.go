@@ -40,7 +40,7 @@ func Unzip(src, dest string) error {
 			os.MkdirAll(path, f.Mode())
 		} else {
 			os.MkdirAll(filepath.Dir(path), f.Mode())
-			f, err := os.OpenFile(path, os.O_WRONLY|os.O_CREATE|os.O_TRUNC, f.Mode())
+			f, err := os.Create(path)
 			if err != nil {
 				return err
 			}
@@ -143,7 +143,7 @@ func compressAndReadFile(src, pth string, filters []string, w *zip.Writer, f os.
 func Zip(src, dest string) error {
 	// Create a buffer to write our archive to.
 	os.MkdirAll(filepath.Dir(dest), 0755)
-	out, err := os.OpenFile(dest, os.O_WRONLY|os.O_CREATE|os.O_TRUNC, 0755)
+	out, err := os.Create(dest)
 	if err != nil {
 		return err
 	}
