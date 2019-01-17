@@ -32,6 +32,27 @@ definitions:
         - *coveralls
         - *codecov
 
+  integration-setup: &integration-setup
+    env:
+      # Specifies the kubernetes version.
+      - KUBERNETES_VERSION=v1.10.0
+      # This moves Kubernetes specific config files.
+      - CHANGE_MINIKUBE_NONE_USER=true
+    before_script:
+      # Setup minikube for ci enviroment.
+      - ./containers/ci/minikube
+    script:
+      # Deploy multiple duplicated of this container onto minikube.
+      - ./containers/kube/deploy
+      # Setup local certificate for testing
+      - ./crt/make
+      # Run all test interacting with the cluster
+      - ./containers/ci/test
+      # Clean everything from the minikube.
+      - ./containers/kube/clean
+      - *coveralls
+      - *codecov
+
 jobs:
   include:
     - <<: *unit-setup
@@ -40,9 +61,10 @@ jobs:
       before_script:
         # OSX comes with a user limit for number of open files
         - ulimit -n 10000
-#    - <<: *unit-setup
-#      os: windows
+    - <<: *unit-setup
+      os: windows
 
+    - <<: *integration-setup
     - stage: integration
       env:
         # Set the Go os variable to javascript.
@@ -51,37 +73,7 @@ jobs:
         - GOARCH=wasm
         # Set the wasm nodejs executor to path.
         - PATH="$PATH:$(go env GOROOT)/misc/wasm"
-      before_script:
-        # Setup minikube for ci enviroment.
-        - ./containers/ci/minikube
-      script:
-        # Deploy multiple duplicated of this container onto minikube.
-        - ./containers/kube/deploy
-        # Setup local certificate for testing
-        - ./crt/make
-        # Run all test interacting with the cluster
-        - ./containers/ci/test
-        # Clean everything from the minikube.
-        - ./containers/kube/clean
-        - *coveralls
-        - *codecov
-    - stage: integration
-      env:
         # Specifies the kubernetes version.
         - KUBERNETES_VERSION=v1.10.0
         # This moves Kubernetes specific config files.
         - CHANGE_MINIKUBE_NONE_USER=true
-      before_script:
-        # Setup minikube for ci enviroment.
-        - ./containers/ci/minikube
-      script:
-        # Deploy multiple duplicated of this container onto minikube.
-        - ./containers/kube/deploy
-        # Setup local certificate for testing
-        - ./crt/make
-        # Run all test interacting with the cluster
-        - ./containers/ci/test
-        # Clean everything from the minikube.
-        - ./containers/kube/clean
-        - *coveralls
-        - *codecov
