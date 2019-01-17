@@ -45,7 +45,7 @@ func TestUntar(t *testing.T) {
 		}
 
 		tmpPath := filepath.Join(rootDir, ".tmp")
-		zipPath := filepath.Join(tmpPath, "sip.zip")
+		zipPath := filepath.Join(tmpPath, "sip.tar.gz")
 		extrctPath := filepath.Join(tmpPath, "unzip")
 
 		err = Tar(rootDir, zipPath)
@@ -119,6 +119,12 @@ func TestGetGo(t *testing.T) {
 			t.Error(err)
 		}
 
+		rootDir, err := getRootDir()
+		if err != nil {
+			t.Error(err)
+		}
+
+		tmpPath := filepath.Join(rootDir, ".tmp")
 		os.RemoveAll(tmpPath)
 	})
 }
@@ -134,7 +140,13 @@ func TestBuild(t *testing.T) {
 		if err != nil {
 			t.Error(err)
 		}
-		
+
+		rootDir, err := getRootDir()
+		if err != nil {
+			t.Error(err)
+		}
+
+		tmpPath := filepath.Join(rootDir, ".tmp")
 		os.RemoveAll(tmpPath)
 	})
 }
