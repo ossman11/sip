@@ -62,8 +62,8 @@ jobs:
       before_script:
         # OSX comes with a user limit for number of open files
         - ulimit -n 10000
-    - <<: *unit-setup
-      os: windows
+#    - <<: *unit-setup
+#      os: windows
 
     - <<: *integration-setup
     - <<: *integration-setup
