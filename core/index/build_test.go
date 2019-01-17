@@ -131,12 +131,9 @@ func TestGetGo(t *testing.T) {
 
 func TestBuild(t *testing.T) {
 	t.Run("Build()", func(t *testing.T) {
-		os := runtime.GOOS
-		arch := runtime.GOARCH
-
 		goLoc = false
 
-		err := Build(os, arch)
+		err := Build(runtime.GOOS, runtime.GOARCH)
 		if err != nil {
 			t.Error(err)
 		}
