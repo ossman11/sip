@@ -5,6 +5,8 @@ import (
 	"io"
 	"net/http"
 	"os"
+	"path/filepath"
+	"runtime"
 
 	"github.com/ossman11/sip/core/index"
 )
@@ -47,9 +49,12 @@ func wasmJS(w http.ResponseWriter, r *http.Request) {
 	file, err := os.Open("./wasm_exec.js")
 
 	if err != nil {
-		w.WriteHeader(500)
-		fmt.Fprint(w, err)
-		return
+
+		file, err = os.Open(filepath.Join(runtime.GOROOT(), "misc/wasm/wasm_exec.js"))
+		if err != nil {
+			http.Error(w, "Failed to find wasm.js file", 404)
+			return
+		}
 	}
 
 	defer file.Close()
