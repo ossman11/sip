@@ -38,6 +38,9 @@ func (c *Core) Init() {
 		return
 	}
 
+	// Attempt to generate tls certificate in case missing
+	GenCrt()
+
 	cfg := &tls.Config{
 		MinVersion:               tls.VersionTLS12,
 		CurvePreferences:         []tls.CurveID{tls.CurveP521, tls.CurveP384, tls.CurveP256},

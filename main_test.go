@@ -18,7 +18,7 @@ func TestMain(m *testing.M) {
 }
 
 func TestCore(t *testing.T) {
-	if !def.Integration() {
+	if def.Integration() {
 		t.Skip()
 	}
 

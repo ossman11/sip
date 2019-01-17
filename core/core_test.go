@@ -36,26 +36,6 @@ func copy(src, dst string) (int64, error) {
 	return nBytes, err
 }
 
-func ensureCrt() error {
-	// Ensure that the certificate files are available
-	os.MkdirAll("crt", os.ModePerm)
-
-	if _, err := os.Stat("crt/server.crt"); os.IsNotExist(err) {
-		_, err = copy("../crt/server.crt", "crt/server.crt")
-		if err != nil {
-			return err
-		}
-	}
-
-	if _, err := os.Stat("crt/server.key"); os.IsNotExist(err) {
-		_, err = copy("../crt/server.key", "crt/server.key")
-		if err != nil {
-			return err
-		}
-	}
-	return nil
-}
-
 func TestNewServer(t *testing.T) {
 	t.Run("NewServer() => default", func(t *testing.T) {
 		res := NewServer()
@@ -87,9 +67,9 @@ func TestNewServer(t *testing.T) {
 	})
 
 	t.Run("NewServer() => Start()", func(t *testing.T) {
-		err := ensureCrt()
+		err := GenCrt()
 		if err != nil {
-			t.Errorf("Failed to copy certificates, because: %v", err)
+			t.Errorf("Failed to generate certificates, because: %v", err)
 		}
 
 		def.FindPort()

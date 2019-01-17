@@ -25,8 +25,6 @@ definitions:
   unit-setup: &unit-setup
     stage: unit
     script:
-      # Setup local certificate for testing
-      - ./crt/make
       # Run simple go tests
       - go test -v -cover -coverprofile "coverage.out" ./core/...
       - *coveralls
@@ -45,8 +43,6 @@ definitions:
     script:
       # Deploy multiple duplicated of this container onto minikube.
       - ./containers/kube/deploy
-      # Setup local certificate for testing
-      - ./crt/make
       # Run all test interacting with the cluster
       - ./containers/ci/test
       # Clean everything from the minikube.

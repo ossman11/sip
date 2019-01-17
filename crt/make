@@ -1,3 +1,0 @@
-#!/bin/bash
-openssl ecparam -genkey -name secp384r1 -out ./crt/server.key
-openssl req -x509 -nodes -newkey rsa:2048 -keyout ./crt/server.key -out ./crt/server.crt -days 3650 -config ./crt/crtcfg
