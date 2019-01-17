@@ -23,16 +23,17 @@ definitions:
     bash <(curl -s https://codecov.io/bash)
 
   unit-setup: &unit-setup
-      stage: unit
-      script:
-        # Setup local certificate for testing
-        - ./crt/make
-        # Run simple go tests
-        - go test -v -cover -coverprofile "coverage.out" ./core/...
-        - *coveralls
-        - *codecov
+    stage: unit
+    script:
+      # Setup local certificate for testing
+      - ./crt/make
+      # Run simple go tests
+      - go test -v -cover -coverprofile "coverage.out" ./core/...
+      - *coveralls
+      - *codecov
 
   integration-setup: &integration-setup
+    stage: integration
     env:
       # Specifies the kubernetes version.
       - KUBERNETES_VERSION=v1.10.0
@@ -65,7 +66,7 @@ jobs:
       os: windows
 
     - <<: *integration-setup
-    - stage: integration
+    - <<: *integration-setup
       env:
         # Set the Go os variable to javascript.
         - GOOS=js
