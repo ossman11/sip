@@ -39,9 +39,9 @@ func Unzip(src, dest string) error {
 		path := filepath.Join(dest, f.Name)
 
 		if f.FileInfo().IsDir() {
-			os.MkdirAll(path, f.Mode())
+			os.MkdirAll(path, 0755)
 		} else {
-			os.MkdirAll(filepath.Dir(path), f.Mode())
+			os.MkdirAll(filepath.Dir(path), 0755)
 			f, err := os.Create(path)
 			if err != nil {
 				return err
@@ -90,7 +90,7 @@ func Untar(src, dest string) error {
 		path := filepath.Join(dest, h.Name)
 
 		if h.FileInfo().IsDir() {
-			err := os.MkdirAll(path, h.FileInfo().Mode())
+			err := os.MkdirAll(path, 0755)
 			if err != nil {
 				return err
 			}
