@@ -73,8 +73,14 @@ func Untar(src, dest string) error {
 	}
 	defer tarFile.Close()
 
+	gzr, err := gzip.NewReader(tarFile)
+	if err != nil {
+		return err
+	}
+	defer gzr.Close()
+
 	// Open tar archive
-	r := tar.NewReader(tarFile)
+	r := tar.NewReader(gzr)
 
 	// Create root destination directory
 	os.MkdirAll(dest, 0755)
@@ -83,16 +89,27 @@ func Untar(src, dest string) error {
 	extractAndWriteFile := func(h *tar.Header) error {
 		path := filepath.Join(dest, h.Name)
 
-		os.MkdirAll(filepath.Dir(path), 0755)
-		f, err := os.Create(path)
-		if err != nil {
-			return err
-		}
-		defer f.Close()
+		if h.FileInfo().IsDir() {
+			err := os.MkdirAll(path, h.FileInfo().Mode())
+			if err != nil {
+				return err
+			}
+		} else {
+			err := os.MkdirAll(filepath.Dir(path), 0755)
+			if err != nil {
+				return err
+			}
 
-		_, err = io.Copy(f, r)
-		if err != nil {
-			return err
+			f, err := os.Create(path)
+			if err != nil {
+				return err
+			}
+			defer f.Close()
+
+			_, err = io.Copy(f, r)
+			if err != nil {
+				return err
+			}
 		}
 
 		return nil
