@@ -18,6 +18,50 @@ func getRootDir() (string, error) {
 }
 */
 
+func TestTar(t *testing.T) {
+	t.Run("Tar()", func(t *testing.T) {
+		rootDir, err := getRootDir()
+		if err != nil {
+			t.Error(err)
+		}
+
+		tmpPath := filepath.Join(rootDir, ".tmp")
+		zipPath := filepath.Join(tmpPath, "sip.tar.gz")
+
+		err = Tar(rootDir, zipPath)
+		if err != nil {
+			t.Error(err)
+		}
+
+		os.RemoveAll(tmpPath)
+	})
+}
+
+func TestUntar(t *testing.T) {
+	t.Run("Untar()", func(t *testing.T) {
+		rootDir, err := getRootDir()
+		if err != nil {
+			t.Error(err)
+		}
+
+		tmpPath := filepath.Join(rootDir, ".tmp")
+		zipPath := filepath.Join(tmpPath, "sip.zip")
+		extrctPath := filepath.Join(tmpPath, "unzip")
+
+		err = Tar(rootDir, zipPath)
+		if err != nil {
+			t.Error(err)
+		}
+
+		err = Untar(zipPath, extrctPath)
+		if err != nil {
+			t.Error(err)
+		}
+
+		os.RemoveAll(tmpPath)
+	})
+}
+
 func TestZip(t *testing.T) {
 	t.Run("Zip()", func(t *testing.T) {
 		rootDir, err := getRootDir()
@@ -74,6 +118,8 @@ func TestGetGo(t *testing.T) {
 		if err != nil {
 			t.Error(err)
 		}
+
+		os.RemoveAll(tmpPath)
 	})
 }
 
@@ -88,6 +134,8 @@ func TestBuild(t *testing.T) {
 		if err != nil {
 			t.Error(err)
 		}
+		
+		os.RemoveAll(tmpPath)
 	})
 }
 

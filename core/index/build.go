@@ -1,8 +1,10 @@
 package index
 
 import (
+	"archive/tar"
 	"archive/zip"
 	"bytes"
+	"compress/gzip"
 	"fmt"
 	"io"
 	"io/ioutil"
@@ -64,6 +66,55 @@ func Unzip(src, dest string) error {
 	return nil
 }
 
+func Untar(src, dest string) error {
+	tarFile, err := os.Open(src)
+	if err != nil {
+		return err
+	}
+	defer tarFile.Close()
+
+	// Open tar archive
+	r := tar.NewReader(tarFile)
+
+	// Create root destination directory
+	os.MkdirAll(dest, 0755)
+
+	// Closure to keep unzip and untar simulair
+	extractAndWriteFile := func(h *tar.Header) error {
+		path := filepath.Join(dest, h.Name)
+
+		os.MkdirAll(filepath.Dir(path), 0755)
+		f, err := os.Create(path)
+		if err != nil {
+			return err
+		}
+		defer f.Close()
+
+		_, err = io.Copy(f, r)
+		if err != nil {
+			return err
+		}
+
+		return nil
+	}
+
+	for {
+		hdr, err := r.Next()
+		if err == io.EOF {
+			return nil
+		}
+		if err != nil {
+			return err
+		}
+		err = extractAndWriteFile(hdr)
+		if err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
 func loadIgnore(src string) []string {
 	file, err := ioutil.ReadFile(src)
 	if err != nil {
@@ -84,7 +135,7 @@ func loadIgnore(src string) []string {
 	return ret
 }
 
-func compressAndReadFile(src, pth string, filters []string, w *zip.Writer, f os.FileInfo) error {
+func compressAndReadFileZip(src, pth string, filters []string, w *zip.Writer, f os.FileInfo) error {
 	fPth := filepath.Join(pth, f.Name())
 
 	for _, filter := range filters {
@@ -100,7 +151,7 @@ func compressAndReadFile(src, pth string, filters []string, w *zip.Writer, f os.
 		}
 	}
 
-	if f.IsDir() {
+	if !f.Mode().IsRegular() {
 		newFilter := loadIgnore(filepath.Join(fPth, ".gitignore"))
 		filters = append(filters, newFilter...)
 
@@ -110,7 +161,7 @@ func compressAndReadFile(src, pth string, filters []string, w *zip.Writer, f os.
 		}
 
 		for _, file := range files {
-			err := compressAndReadFile(src, fPth, filters, w, file)
+			err := compressAndReadFileZip(src, fPth, filters, w, file)
 			if err != nil {
 				return err
 			}
@@ -151,6 +202,7 @@ func Zip(src, dest string) error {
 
 	// Create a new zip archive.
 	w := zip.NewWriter(out)
+	defer w.Close()
 
 	file, err := os.Stat(src)
 	if err != nil {
@@ -159,16 +211,97 @@ func Zip(src, dest string) error {
 
 	par := filepath.Join(src, "..")
 
-	err = compressAndReadFile(par, par, []string{".git"}, w, file)
+	return compressAndReadFileZip(par, par, []string{".git"}, w, file)
+}
+
+func compressAndReadFileTar(src, pth string, filters []string, w *tar.Writer, f os.FileInfo) error {
+	fPth := filepath.Join(pth, f.Name())
+
+	for _, filter := range filters {
+		m, _ := filepath.Match(filter, f.Name())
+		if !m {
+			rPth, err := filepath.Rel(src, fPth)
+			if err == nil {
+				m, _ = filepath.Match(filter, rPth)
+			}
+		}
+		if m {
+			return nil
+		}
+	}
+
+	relName, err := filepath.Rel(src, fPth)
+
+	// create a new dir/file header
+	header, err := tar.FileInfoHeader(f, relName)
 	if err != nil {
 		return err
 	}
 
-	err = w.Close()
+	header.Name = strings.TrimPrefix(relName, string(filepath.Separator))
+
+	if err := w.WriteHeader(header); err != nil {
+		return err
+	}
+
+	if !f.Mode().IsRegular() {
+		newFilter := loadIgnore(filepath.Join(fPth, ".gitignore"))
+		filters = append(filters, newFilter...)
+
+		files, err := ioutil.ReadDir(fPth)
+		if err != nil {
+			return err
+		}
+
+		for _, file := range files {
+			err := compressAndReadFileTar(src, fPth, filters, w, file)
+			if err != nil {
+				return err
+			}
+		}
+		return nil
+	}
+
+	// open files for taring
+	file, err := os.Open(fPth)
 	if err != nil {
 		return err
 	}
+	defer file.Close()
+
+	// copy file data into tar writer
+	if _, err := io.Copy(w, file); err != nil {
+		return err
+	}
+
 	return nil
+}
+
+func Tar(src, dest string) error {
+	// ensure the src actually exists before trying to tar it
+	file, err := os.Stat(src)
+	if err != nil {
+		return err
+	}
+
+	// Create a buffer to write our archive to.
+	os.MkdirAll(filepath.Dir(dest), 0755)
+	out, err := os.Create(dest)
+	if err != nil {
+		return err
+	}
+	defer out.Close()
+
+	gzw := gzip.NewWriter(out)
+	defer gzw.Close()
+
+	w := tar.NewWriter(gzw)
+	defer w.Close()
+
+	par := filepath.Join(src, "..")
+
+	// walk path
+	return compressAndReadFileTar(par, par, []string{".git"}, w, file)
 }
 
 var mappings = []struct {
@@ -251,7 +384,6 @@ func UserAgent(userAgent string) (string, string) {
 var locTmp = ".tmp"
 var goLoc = false
 var goEns = false
-var goLocZip = filepath.Join(locTmp, "go.zip")
 var goLocDir = filepath.Join(locTmp, "go")
 var goLocSip = filepath.Join(goLocDir, "src", "github.com", "ossman11", "sip")
 var goLocBin = filepath.Join(goLocDir, "bin")
@@ -266,6 +398,13 @@ func localize(pth string) string {
 }
 
 func getGo() error {
+	isTar := runtime.GOOS != "windows"
+	archiveExtension := ".tar.gz"
+	if !isTar {
+		archiveExtension = ".zip"
+	}
+	goLocArc := localize(goLocDir) + archiveExtension
+
 	file, err := os.Open(localize(goLocBin))
 	if err == nil {
 		file.Close()
@@ -273,16 +412,11 @@ func getGo() error {
 	}
 
 	err = os.MkdirAll(localize(locTmp), 0755)
-	file, err = os.Create(localize(goLocZip))
+	file, err = os.Create(goLocArc)
 	if err != nil {
 		return err
 	}
 	defer file.Close()
-
-	archiveExtension := ".tar.gz"
-	if runtime.GOOS == "windows" {
-		archiveExtension = ".zip"
-	}
 
 	dlURL := "https://dl.google.com/go/" +
 		runtime.Version() + "." + runtime.GOOS + "-" + runtime.GOARCH + archiveExtension
@@ -293,7 +427,11 @@ func getGo() error {
 
 	io.Copy(file, res.Body)
 
-	err = Unzip(localize(goLocZip), localize(locTmp))
+	if isTar {
+		err = Untar(goLocArc, localize(locTmp))
+	} else {
+		err = Unzip(goLocArc, localize(locTmp))
+	}
 	if err != nil {
 		return err
 	}
