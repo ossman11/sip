@@ -558,7 +558,12 @@ func Build(tos, tarch string) error {
 		}
 	}
 
-	err = runGo([]string{"get", pckStr}, nil, &stdout, &stderr)
+	envStr := 	[]string{
+		"GOOS=" + tos,
+		"GOARCH=" + tarch,
+	}
+
+	err = runGo([]string{"get", pckStr}, envStr, &stdout, &stderr)
 	if err != nil {
 		fmt.Print(stderr.String())
 		return err
@@ -572,10 +577,7 @@ func Build(tos, tarch string) error {
 			filepath.Join(localize(locTmp), tos+"-"+tarch),
 			pckStr,
 		},
-		[]string{
-			"GOOS=" + tos,
-			"GOARCH=" + tarch,
-		},
+		envStr,
 		&stdout,
 		&stderr,
 	)

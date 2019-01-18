@@ -183,6 +183,12 @@ func (i *Index) Update() {
 func (i *Index) Scan() {
 	i.Init()
 	i.Status = Scanning
+
+	// Attempt to connect to parent node
+	ph, pp := def.GetParent()
+	if ph != "" {
+		i.Join(net.ParseIP(ph), pp)
+	}
 	i.scanner.Scan()
 	i.Status = Indexing
 	i.Update()
@@ -195,7 +201,7 @@ func (i *Index) Collect(n *Network) {
 
 	bod, _ := json.Marshal(n)
 	for _, v := range i.Nodes {
-		if n.Has(v.ID) {
+		if v.IP.String() == "0.0.0.0" || n.Has(v.ID) {
 			continue
 		}
 
