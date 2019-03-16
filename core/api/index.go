@@ -93,6 +93,14 @@ func (h *Index) join(w http.ResponseWriter, r *http.Request) {
 
 		targetOS, targetArch := index.UserAgent(userAgent)
 
+		// Redirect windows clients to an url that ends with .exe
+		if targetOS == "windows" {
+			if strings.Index(r.URL.Path, ".exe") < 0 {
+				http.Redirect(w, r, r.URL.String()+".exe", 303)
+				return
+			}
+		}
+
 		err := index.Build(targetOS, targetArch)
 		if err != nil {
 			fmt.Println(err)
@@ -141,11 +149,12 @@ func (h *Index) refresh(w http.ResponseWriter, r *http.Request) {
 // Get Implements the Get API for the Index definition
 func (h Index) Get() map[string]http.HandlerFunc {
 	return map[string]http.HandlerFunc{
-		def.APIIndex:        h.handleIndex,
-		def.APIIndexJoin:    h.join,
-		def.APIIndexCollect: h.collect,
-		"/index/status":     h.status,
-		"/index/refresh":    h.refresh,
+		def.APIIndex:              h.handleIndex,
+		def.APIIndexJoin:          h.join,
+		def.APIIndexJoin + ".exe": h.join,
+		def.APIIndexCollect:       h.collect,
+		"/index/status":           h.status,
+		"/index/refresh":          h.refresh,
 	}
 }
 
