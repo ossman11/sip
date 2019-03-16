@@ -1,4 +1,4 @@
-FROM golang:1.8
+FROM golang:1.11
 
 ENV PORT=1670
 

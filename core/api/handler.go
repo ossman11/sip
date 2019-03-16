@@ -4,6 +4,7 @@ import (
 	"errors"
 	"fmt"
 	"net/http"
+	"path/filepath"
 )
 
 // Handler implements the http handeling of a sip instance
@@ -14,21 +15,36 @@ type Handler struct {
 }
 
 func (rh *Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-	a, ok := rh.gets[r.URL.Path]
-
+	l := rh.gets
 	if r.Method == "POST" {
-		a, ok = rh.posts[r.URL.Path]
+		l = rh.posts
+	}
+
+	a, ok := l[r.URL.Path]
+
+	// Set default headers for all services (e.g. security)
+	w.Header().Add("Strict-Transport-Security", "max-age=63072000; includeSubDomains")
+	w.Header().Add("Access-Control-Allow-Origin", "*")
+	w.Header().Add("Access-Control-Allow-Credentials", "false")
+	w.Header().Add("Access-Control-Allow-Headers", "Client-Protocol, Content-Length, Content-Type")
+
+	if !ok {
+		// search through glob matching
+		for ck, cv := range l {
+			if m, err := filepath.Match(ck, r.URL.Path); m && err == nil {
+				a = cv
+				ok = true
+				break
+			}
+		}
 	}
 
 	if ok {
-		w.Header().Add("Strict-Transport-Security", "max-age=63072000; includeSubDomains")
-		w.Header().Add("Access-Control-Allow-Origin", "*")
-		w.Header().Add("Access-Control-Allow-Credentials", "false")
-		w.Header().Add("Access-Control-Allow-Headers", "Client-Protocol, Content-Length, Content-Type")
 		a(w, r)
-	} else {
-		http.NotFound(w, r)
+		return
 	}
+	http.NotFound(w, r)
+
 }
 
 // Add adds a map of Api implementations to the Handler instance

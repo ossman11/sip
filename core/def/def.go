@@ -1,14 +1,38 @@
 package def
 
 import (
+	"net"
 	"os"
+	"path/filepath"
 	"strconv"
+	"strings"
 )
 
 const (
 	// Port is the default port on which sip nodes run
 	Port int = 1670
 )
+
+func GetParent() (string, int) {
+	fileName := os.Args[0]
+	fileName = strings.Trim(
+		strings.Replace(
+			fileName,
+			filepath.Dir(fileName),
+			"",
+			1,
+		),
+		"\\/.exe",
+	)
+
+	if host, ps, err := net.SplitHostPort(strings.Replace(fileName, "_", ":", 1)); err == nil {
+		p, err := strconv.Atoi(ps)
+		if err == nil {
+			return host, p
+		}
+	}
+	return "", 0
+}
 
 func GetPort() int {
 	envPort, ex := os.LookupEnv("PORT")
@@ -17,6 +41,11 @@ func GetPort() int {
 		if err == nil {
 			return tmpPort
 		}
+	}
+
+	ph, pp := GetParent()
+	if ph != "" {
+		return pp
 	}
 	return Port
 }
