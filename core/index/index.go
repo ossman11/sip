@@ -216,6 +216,7 @@ func (i *Index) Collect(n *Network) {
 			err = dec.Decode(&resBod)
 
 			n.Merge(&resBod)
+			bod, _ = json.Marshal(n)
 		}
 	}
 }
