@@ -84,20 +84,19 @@ func (h *Index) join(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if r.Method == "GET" {
+		userAgent := r.Header.Get("user-agent")
+		targetOS, targetArch := index.UserAgent(userAgent)
+
+		if userAgent == "" || targetOS == "" || targetArch == "" {
+			http.Error(w, "Failed to resolve user-agent platform.", http.StatusSeeOther)
+			return
+		}
+
 		hostName := r.Host
 		if strings.Index(r.URL.Path, "/join/"+hostName) < 0 {
 			http.Redirect(w, r, r.URL.String()+"/"+hostName, http.StatusSeeOther)
 			return
 		}
-
-		userAgent := r.Header.Get("user-agent")
-
-		if userAgent == "" {
-			http.Error(w, "Failed to resolve user-agent platform.", http.StatusSeeOther)
-			return
-		}
-
-		targetOS, targetArch := index.UserAgent(userAgent)
 
 		if targetOS == "windows" && strings.Index(r.URL.Path, "/join/"+hostName+".exe") < 0 {
 			http.Redirect(w, r, r.URL.String()+".exe", http.StatusSeeOther)
@@ -124,6 +123,20 @@ func (h *Index) join(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *Index) collect(w http.ResponseWriter, r *http.Request) {
+	enc := json.NewEncoder(w)
+	network := index.Network{}
+
+	if r.Method == "POST" {
+		dec := json.NewDecoder(r.Body)
+		dec.Decode(&network)
+	}
+
+	h.index.Collect(&network)
+
+	enc.Encode(network)
+}
+
+func (h *Index) call(w http.ResponseWriter, r *http.Request) {
 	enc := json.NewEncoder(w)
 	network := index.Network{}
 

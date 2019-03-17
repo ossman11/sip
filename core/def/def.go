@@ -57,4 +57,6 @@ const (
 	APIIndexJoin string = APIIndex + "/join"
 	// APIIndexCollect provides the collect url for the index API
 	APIIndexCollect string = APIIndex + "/collect"
+	// APIIndexCall provides the call url for the index API
+	APIIndexCall string = APIIndex + "/call"
 )

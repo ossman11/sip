@@ -17,7 +17,11 @@ func (n *Network) Add(i *Index, id ID) {
 		n.Indexs = map[ID]*Index{}
 	}
 	n.Indexs[id] = i
-	n.AddIndex(i, id, nil)
+
+	h := map[ID]bool{}
+	n.AddIndex(i, id, h)
+	h[id] = false
+	n.AddIndex(i, id, h)
 }
 
 func (n *Network) Merge(a *Network) bool {

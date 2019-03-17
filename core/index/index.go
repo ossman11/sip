@@ -130,7 +130,7 @@ func (i *Index) Merge(n *Index) bool {
 		_, ex := i.Nodes[nk]
 		if !ex {
 			ret = true
-			i.Add(nv)
+			i.JoinNode(nv)
 		}
 	}
 
