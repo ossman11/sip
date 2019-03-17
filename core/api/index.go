@@ -169,6 +169,8 @@ func (h Index) Get() map[string]http.HandlerFunc {
 		def.APIIndexJoin:         h.join,
 		def.APIIndexJoin + "/**": h.join,
 		def.APIIndexCollect:      h.collect,
+		def.APIIndexCall:         h.call,
+		def.APIIndexCall + "/**": h.call,
 		"/index/status":          h.status,
 		"/index/refresh":         h.refresh,
 	}
