@@ -13,7 +13,8 @@ func TestGetStats(t *testing.T) {
 			t.Error(err)
 		}
 		lt := time.Now()
-		for {
+		i := 0
+		for i < 10 {
 			_, err := s.GetUsage()
 			if err != nil {
 				t.Error(err)
@@ -33,6 +34,7 @@ func TestGetStats(t *testing.T) {
 				fmt.Printf("Cores: %.2f Memory: %.2f Storage: %.2f", u.Cores, u.Memory, u.Storage)
 				fmt.Println()
 			*/
+			i++
 		}
 	})
 }
