@@ -20,6 +20,7 @@ type Index struct {
 	Status      Status
 	Connections map[ID]*Connection
 	Nodes       map[ID]*Node
+	Physical    StatLoad
 	scanner     Scan
 	httpClient  *http.Client
 	updateChan  chan bool
@@ -221,6 +222,14 @@ func (i *Index) Collect(n *Network) {
 	}
 }
 
+func (i *Index) Usage() {
+	s, _ := GetStat()
+	s.GetUsage()
+	i.Physical = GetLoad()
+	time.Sleep(time.Second)
+	i.Usage()
+}
+
 func (i *Index) Init() {
 	if i.Nodes == nil {
 		i.Nodes = map[ID]*Node{}
@@ -251,4 +260,6 @@ func (i *Index) Init() {
 	if i.Status == 0 {
 		i.Status = Idle
 	}
+
+	go i.Usage()
 }
