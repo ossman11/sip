@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"io/ioutil"
 	"net"
+	"net/http"
 	"net/http/httptest"
 	"strings"
 	"testing"
@@ -163,7 +164,6 @@ func TestIndex_handleIndex(t *testing.T) {
 }
 
 func TestIndex_join(t *testing.T) {
-
 	t.Run("join() => GET", func(t *testing.T) {
 		testIndex := NewIndexTest()
 
@@ -174,7 +174,7 @@ func TestIndex_join(t *testing.T) {
 		resp := w.Result()
 		body, _ := ioutil.ReadAll(resp.Body)
 
-		if resp.StatusCode != 500 {
+		if resp.StatusCode != http.StatusInternalServerError {
 			t.Errorf("Failed to use join(), because StatusCode was %v.", resp.StatusCode)
 		}
 

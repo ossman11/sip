@@ -88,7 +88,7 @@ func (h *Index) join(w http.ResponseWriter, r *http.Request) {
 		targetOS, targetArch := index.UserAgent(userAgent)
 
 		if userAgent == "" || targetOS == "" || targetArch == "" {
-			http.Error(w, "Failed to resolve user-agent platform.", http.StatusSeeOther)
+			http.Error(w, "Failed to resolve user-agent platform.", http.StatusInternalServerError)
 			return
 		}
 
@@ -106,14 +106,14 @@ func (h *Index) join(w http.ResponseWriter, r *http.Request) {
 		err := index.Build(targetOS, targetArch)
 		if err != nil {
 			fmt.Println(err)
-			http.Error(w, "Failed to compile target binaries.", 500)
+			http.Error(w, "Failed to compile target binaries.", http.StatusInternalServerError)
 			return
 		}
 
 		tmpFile, err := os.Open(".tmp/" + targetOS + "-" + targetArch)
 		if err != nil {
 			fmt.Println(err)
-			http.Error(w, "Failed to open target binaries.", 500)
+			http.Error(w, "Failed to open target binaries.", http.StatusInternalServerError)
 			return
 		}
 		defer tmpFile.Close()
