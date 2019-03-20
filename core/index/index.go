@@ -227,7 +227,8 @@ func (i *Index) Usage() {
 	s.GetUsage()
 	i.Physical = GetLoad()
 	time.Sleep(time.Second)
-	i.Usage()
+	// TODO: make sure server is really running
+	// i.Usage()
 }
 
 func (i *Index) Init() {
