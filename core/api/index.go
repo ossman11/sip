@@ -7,6 +7,7 @@ import (
 	"net"
 	"net/http"
 	"os"
+	"regexp"
 	"strings"
 
 	"github.com/ossman11/sip/core/def"
@@ -137,17 +138,47 @@ func (h *Index) collect(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *Index) call(w http.ResponseWriter, r *http.Request) {
-	enc := json.NewEncoder(w)
 	network := index.Network{}
-
-	if r.Method == "POST" {
-		dec := json.NewDecoder(r.Body)
-		dec.Decode(&network)
-	}
 
 	h.index.Collect(&network)
 
-	enc.Encode(network)
+	strIP := r.RemoteAddr
+	ipEnd := strings.LastIndex(strIP, ":")
+	ip := net.ParseIP(strIP[:ipEnd])
+	s := index.ThisNode(h.index, ip)
+
+	reg, _ := regexp.Compile("/index/call/(.*)")
+	t := r.Header.Get("X-Target")
+	act := reg.FindStringSubmatch(r.URL.Path)
+
+	path := index.Route{}
+	if strings.LastIndex(t, ",") > -1 {
+		strPath := strings.Split(t, ",")
+
+		for _, pv := range strPath {
+			path = index.ExtendRoute(index.NewID(pv), &path)
+		}
+	} else {
+		td := index.NewID(t)
+		if s.ID != td {
+			err, paths := network.Path(s.ID, td)
+
+			if err == nil {
+				for _, pv := range paths {
+					path = *pv[0]
+					break
+				}
+			}
+		}
+	}
+
+	res, err := h.index.Call(path, act[1])
+
+	if err == nil {
+		w.Header().Set("Content-Type", res.Header.Get("Content-Type"))
+		w.Header().Set("Content-Length", res.Header.Get("Content-Length"))
+		io.Copy(w, res.Body)
+	}
 }
 
 func (h *Index) status(w http.ResponseWriter, r *http.Request) {

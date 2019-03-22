@@ -5,6 +5,16 @@ type Route struct {
 	ID    ID
 }
 
+func (r *Route) String() string {
+	ret := ""
+	for _, cv := range r.Nodes {
+		if ret != "" {
+			ret = "," + ret
+		}
+		ret = string(cv) + ret
+	}
+	return ret
+}
 func (r *Route) Has(id ID) bool {
 	for _, cv := range r.Nodes {
 		if cv == id {
@@ -26,6 +36,10 @@ func (r *Route) Equal(t *Route) bool {
 	}
 
 	return true
+}
+
+func (r *Route) Next() Route {
+	return NewRoute(r.Nodes[1:])
 }
 
 func (r *Route) Len() int {

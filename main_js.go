@@ -3,7 +3,9 @@
 package main
 
 import (
+	"bytes"
 	"encoding/json"
+	"fmt"
 	"net"
 	"strconv"
 	"syscall/js"
@@ -45,6 +47,49 @@ func main() {
 	}
 
 	globSip.Set("index", iJS)
+
+	callFnc := js.FuncOf(func(this js.Value, args []js.Value) interface{} {
+		go func() {
+			t := args[0]
+			if t.Type() != js.TypeString {
+				return // js.ValueOf("Failed not enough arguments.")
+			}
+
+			n := index.Network{}
+			i.Collect(&n)
+			s := index.ThisNode(&i, hostIP)
+			err, ps := n.Path(s.ID, index.NewID(t.String()))
+
+			if err != nil {
+				return // js.ValueOf("Failed no path found.")
+			}
+
+			p := index.Route{}
+			for _, cv := range ps {
+				p = *cv[0]
+				continue
+			}
+
+			i.Call(p, "index")
+		}()
+		return nil
+	})
+
+	globSip.Set("call", callFnc)
+
+	collectFnc := js.FuncOf(func(this js.Value, args []js.Value) interface{} {
+		go func() {
+			n := index.Network{}
+			i.Collect(&n)
+			var b bytes.Buffer
+			bod, _ := json.Marshal(n)
+			b.Write(bod)
+			fmt.Println(&b)
+		}()
+		return nil
+	})
+
+	globSip.Set("collect", collectFnc)
 
 	// Keep Go alive in the background
 	go forever()

@@ -231,6 +231,34 @@ func (i *Index) Usage() {
 	// i.Usage()
 }
 
+func (i *Index) Call(path Route, act string) (*http.Response, error) {
+	s := ThisNode(i, net.ParseIP("127.0.0.1"))
+
+	fid := s.ID
+	n := path
+
+	if len(path.Nodes) > 0 {
+		fid = path.Nodes[0]
+		n = path.Next()
+		for fid == s.ID && len(n.Nodes) > 0 {
+			fid = n.Nodes[0]
+			n = n.Next()
+		}
+	}
+
+	for fid == s.ID {
+		return i.httpClient.Get("https://127.0.0.1:" + strconv.Itoa(s.Port) + "/" + act)
+	}
+
+	v := i.Nodes[fid]
+	url := "https://" + v.IP.String() + ":" + strconv.Itoa(v.Port) + def.APIIndexCall + "/" + act
+
+	req, _ := http.NewRequest("GET", url, nil)
+	req.Header.Add("X-Target", n.String())
+
+	return i.httpClient.Do(req)
+}
+
 func (i *Index) Init() {
 	if i.Nodes == nil {
 		i.Nodes = map[ID]*Node{}
