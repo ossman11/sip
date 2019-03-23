@@ -9,9 +9,9 @@ func (r *Route) String() string {
 	ret := ""
 	for _, cv := range r.Nodes {
 		if ret != "" {
-			ret = "," + ret
+			ret += ","
 		}
-		ret = string(cv) + ret
+		ret += string(cv)
 	}
 	return ret
 }

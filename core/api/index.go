@@ -156,7 +156,7 @@ func (h *Index) call(w http.ResponseWriter, r *http.Request) {
 		strPath := strings.Split(t, ",")
 
 		for _, pv := range strPath {
-			path = index.ExtendRoute(index.NewID(pv), &path)
+			path = index.NewRoute(append(path.Nodes, index.NewID(pv)))
 		}
 	} else {
 		td := index.NewID(t)

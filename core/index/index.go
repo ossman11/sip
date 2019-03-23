@@ -200,8 +200,10 @@ func (i *Index) Collect(n *Network) {
 	thisNode := ThisNode(i, net.ParseIP("127.0.0.1"))
 	n.Add(i, thisNode.ID)
 
+	h := map[ID]bool{}
 	bod, _ := json.Marshal(n)
 	for _, v := range i.Nodes {
+		h[v.ID] = true
 		if v.IP.String() == "0.0.0.0" || n.Has(v.ID) {
 			continue
 		}
@@ -220,6 +222,8 @@ func (i *Index) Collect(n *Network) {
 			bod, _ = json.Marshal(n)
 		}
 	}
+	h[thisNode.ID] = false
+	n.AddIndex(i, thisNode.ID, h)
 }
 
 func (i *Index) Usage() {
@@ -235,14 +239,12 @@ func (i *Index) Call(path Route, act string) (*http.Response, error) {
 	s := ThisNode(i, net.ParseIP("127.0.0.1"))
 
 	fid := s.ID
-	n := path
-
 	if len(path.Nodes) > 0 {
 		fid = path.Nodes[0]
-		n = path.Next()
-		for fid == s.ID && len(n.Nodes) > 0 {
-			fid = n.Nodes[0]
-			n = n.Next()
+		path = path.Next()
+		for fid == s.ID && len(path.Nodes) > 0 {
+			fid = path.Nodes[0]
+			path = path.Next()
 		}
 	}
 
@@ -254,7 +256,7 @@ func (i *Index) Call(path Route, act string) (*http.Response, error) {
 	url := "https://" + v.IP.String() + ":" + strconv.Itoa(v.Port) + def.APIIndexCall + "/" + act
 
 	req, _ := http.NewRequest("GET", url, nil)
-	req.Header.Add("X-Target", n.String())
+	req.Header.Add("X-Target", path.String())
 
 	return i.httpClient.Do(req)
 }
