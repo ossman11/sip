@@ -16,15 +16,17 @@ import (
 // TODO: aggregate whole network into nodes
 // TODO: allow for redirect indexing nodes
 type Index struct {
-	Type        Type
-	Status      Status
-	Connections map[ID]*Connection
-	Nodes       map[ID]*Node
-	Physical    StatLoad
-	scanner     Scan
-	httpClient  *http.Client
-	updateChan  chan bool
-	updateNext  bool
+	Type         Type
+	Status       Status
+	Connections  map[ID]*Connection
+	Nodes        map[ID]*Node
+	Physical     StatLoad
+	scanner      Scan
+	httpClient   *http.Client
+	collectChan  chan bool
+	collectCache *Network
+	updateChan   chan bool
+	updateNext   bool
 }
 
 func (i *Index) Add(c *Node) {
@@ -200,6 +202,20 @@ func (i *Index) Collect(n *Network) {
 	thisNode := ThisNode(i, net.ParseIP("127.0.0.1"))
 	n.Add(i, thisNode.ID)
 
+	// If already collecting wait for others to finish
+	if i.collectChan != nil {
+		<-i.collectChan
+		n.Merge(i.collectCache)
+		return
+	}
+	i.collectChan = make(chan bool)
+
+	if i.collectCache != nil {
+		n.Merge(i.collectCache)
+	} else {
+		i.collectCache = &Network{}
+	}
+
 	h := map[ID]bool{}
 	bod, _ := json.Marshal(n)
 	for _, v := range i.Nodes {
@@ -224,6 +240,13 @@ func (i *Index) Collect(n *Network) {
 	}
 	h[thisNode.ID] = false
 	n.AddIndex(i, thisNode.ID, h)
+	i.collectCache.Merge(n)
+
+	ch := i.collectChan
+	i.collectChan = nil
+	if ch != nil {
+		close(ch)
+	}
 }
 
 func (i *Index) Usage() {
