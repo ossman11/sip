@@ -24,9 +24,9 @@ func (rh *Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
 	// Set default headers for all services (e.g. security)
 	w.Header().Add("Strict-Transport-Security", "max-age=63072000; includeSubDomains")
-	w.Header().Add("Access-Control-Allow-Origin", "*")
+	w.Header().Add("Access-Control-Allow-Origin", r.Host)
 	w.Header().Add("Access-Control-Allow-Credentials", "false")
-	w.Header().Add("Access-Control-Allow-Headers", "Client-Protocol, Content-Length, Content-Type")
+	w.Header().Add("Access-Control-Allow-Headers", "Client-Protocol, Content-Length, Content-Type, x-target")
 
 	if !ok {
 		// search through glob matching

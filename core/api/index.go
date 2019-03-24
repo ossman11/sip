@@ -138,14 +138,6 @@ func (h *Index) collect(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *Index) call(w http.ResponseWriter, r *http.Request) {
-	network := index.Network{}
-
-	h.index.Collect(&network)
-
-	strIP := r.RemoteAddr
-	ipEnd := strings.LastIndex(strIP, ":")
-	ip := net.ParseIP(strIP[:ipEnd])
-	s := index.ThisNode(h.index, ip)
 
 	reg, _ := regexp.Compile("/index/call/(.*)")
 	t := r.Header.Get("X-Target")
@@ -159,16 +151,11 @@ func (h *Index) call(w http.ResponseWriter, r *http.Request) {
 			path = index.NewRoute(append(path.Nodes, index.NewID(pv)))
 		}
 	} else {
-		td := index.NewID(t)
-		if s.ID != td {
-			err, paths := network.Path(s.ID, td)
-
-			if err == nil {
-				for _, pv := range paths {
-					path = *pv[0]
-					break
-				}
-			}
+		if len(t) == 0 {
+			path = index.NewRoute([]index.ID{})
+		} else {
+			td := index.NewID(t)
+			path = index.NewRoute([]index.ID{td})
 		}
 	}
 

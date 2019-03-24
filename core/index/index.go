@@ -275,7 +275,22 @@ func (i *Index) Call(path Route, act string) (*http.Response, error) {
 		return i.httpClient.Get("https://127.0.0.1:" + strconv.Itoa(s.Port) + "/" + act)
 	}
 
-	v := i.Nodes[fid]
+	v, ex := i.Nodes[fid]
+	if !ex {
+		network := Network{}
+		i.Collect(&network)
+
+		err, paths := network.Path(s.ID, fid)
+		if err == nil {
+			// TODO: pick most optimal path
+			for _, pv := range paths {
+				path = *pv[0]
+				return i.Call(path, act)
+			}
+		} else {
+			return nil, err
+		}
+	}
 	url := "https://" + v.IP.String() + ":" + strconv.Itoa(v.Port) + def.APIIndexCall + "/" + act
 
 	req, _ := http.NewRequest("GET", url, nil)

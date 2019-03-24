@@ -54,22 +54,10 @@ func main() {
 				return // js.ValueOf("Failed not enough arguments.")
 			}
 
-			n := index.Network{}
-			i.Collect(&n)
-			s := index.ThisNode(&i, hostIP)
-			err, ps := n.Path(s.ID, index.NewID(t.String()))
-
-			if err != nil {
-				return // js.ValueOf("Failed no path found.")
-			}
-
 			// Picks random route from all options
-			p := index.Route{}
-			for _, cv := range ps {
-				p = *cv[0]
-				continue
+			p := index.Route{
+				Nodes: []index.ID{index.NewID(t.String())},
 			}
-
 			i.Call(p, "index")
 		}()
 		return nil
