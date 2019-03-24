@@ -5,7 +5,6 @@ package main
 import (
 	"bytes"
 	"encoding/json"
-	"fmt"
 	"net"
 	"strconv"
 	"syscall/js"
@@ -64,6 +63,7 @@ func main() {
 				return // js.ValueOf("Failed no path found.")
 			}
 
+			// Picks random route from all options
 			p := index.Route{}
 			for _, cv := range ps {
 				p = *cv[0]
@@ -79,12 +79,18 @@ func main() {
 
 	collectFnc := js.FuncOf(func(this js.Value, args []js.Value) interface{} {
 		go func() {
+			// Collect network
 			n := index.Network{}
 			i.Collect(&n)
+
+			// Tranform to string
 			var b bytes.Buffer
 			bod, _ := json.Marshal(n)
 			b.Write(bod)
-			fmt.Println(&b)
+
+			// Convert to javascript JSON
+			jsJSON := js.Global().Get("JSON").Call("parse", b.String())
+			js.Global().Get("console").Call("log", jsJSON)
 		}()
 		return nil
 	})
