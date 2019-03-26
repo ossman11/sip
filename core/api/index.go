@@ -180,6 +180,27 @@ func (h *Index) refresh(w http.ResponseWriter, r *http.Request) {
 	fmt.Fprintf(w, "")
 }
 
+func (h *Index) upload(w http.ResponseWriter, r *http.Request) {
+	if r.Method == "POST" {
+		reg, _ := regexp.Compile("/fs/upload/(.*)")
+		act := reg.FindStringSubmatch(r.URL.Path)
+		err := h.index.Upload(act[1], r.Body)
+		if err != nil {
+			http.Error(w, "Failed to persist file.", http.StatusInternalServerError)
+		}
+	}
+	fmt.Fprintf(w, "")
+}
+
+func (h *Index) download(w http.ResponseWriter, r *http.Request) {
+	reg, _ := regexp.Compile("/fs/download/(.*)")
+	act := reg.FindStringSubmatch(r.URL.Path)
+	err := h.index.Download(act[1], w)
+	if err != nil {
+		http.Error(w, "Failed to persist file.", http.StatusInternalServerError)
+	}
+}
+
 // Get Implements the Get API for the Index definition
 func (h Index) Get() map[string]http.HandlerFunc {
 	return map[string]http.HandlerFunc{
@@ -191,6 +212,7 @@ func (h Index) Get() map[string]http.HandlerFunc {
 		def.APIIndexCall + "/**": h.call,
 		"/index/status":          h.status,
 		"/index/refresh":         h.refresh,
+		"/fs/download/**":     h.download,
 	}
 }
 
@@ -200,6 +222,7 @@ func (h Index) Post() map[string]http.HandlerFunc {
 		def.APIIndex:        h.handleIndex,
 		def.APIIndexJoin:    h.join,
 		def.APIIndexCollect: h.collect,
+		"/fs/upload/**":     h.upload,
 	}
 }
 

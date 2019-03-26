@@ -9,6 +9,7 @@ import (
 	"net/http"
 	"strconv"
 	"time"
+	"io"
 
 	"github.com/ossman11/sip/core/def"
 )
@@ -27,6 +28,7 @@ type Index struct {
 	collectCache *Network
 	updateChan   chan bool
 	updateNext   bool
+	filesystem   FileSystem
 }
 
 func (i *Index) Add(c *Node) {
@@ -299,6 +301,14 @@ func (i *Index) Call(path Route, act string) (*http.Response, error) {
 	return i.httpClient.Do(req)
 }
 
+func (i *Index) Upload(p string, c io.Reader) error {
+	return i.filesystem.Add(p, c)
+}
+
+func (i *Index) Download(p string, c io.Writer) error {
+	return i.filesystem.Get(p, c)
+}
+
 func (i *Index) Init() {
 	if i.Nodes == nil {
 		i.Nodes = map[ID]*Node{}
@@ -329,6 +339,8 @@ func (i *Index) Init() {
 	if i.Status == 0 {
 		i.Status = Idle
 	}
+
+	i.filesystem = NewFileSystem(i)
 
 	go i.Usage()
 }
